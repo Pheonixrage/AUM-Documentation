@@ -4,6 +4,20 @@ All notable changes across both AUM-The-Epic (Client) and AUM-Headless (Server).
 
 ---
 
+## [2026-01-23]
+
+### AUM-The-Epic (Client)
+- **feat**: Client-only tutorial system - runs without game server
+- **feat**: LocalTutorialManager - spawns player and bot locally
+- **feat**: LocalBot + LocalBotBT - client-side bot AI (ported from server)
+- **feat**: TestModeClient tutorial mode toggle
+- **fix**: Tutorial quests updated for local bot support (Tutorial6, TutorialBot, TutorialKillBot*)
+- **fix**: GameManager skips server packet in client-only tutorial
+- **fix**: WebSocket guards for PlayFab mode (FriendsManager, PartyManager, LobbyManager, MainMenuPacketManager)
+- **fix**: Node.cs GetRootNode() method for behavior tree
+
+---
+
 ## [2026-01-11]
 
 ### AUM-Headless
