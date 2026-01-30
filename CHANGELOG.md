@@ -4,6 +4,79 @@ All notable changes across both AUM-The-Epic (Client) and AUM-Headless (Server).
 
 ---
 
+## [2026-01-30] 🏆 LEGENDARY FIX
+
+### AUM-The-Epic (Client)
+- **fix**: Character sync - client now sends full character data (fightingStyle, godSelected, elementals) in auth packet
+- **fix**: NetworkManager.AuthenticatePlayer() sends activeAvatarInfo to server
+- **fix**: Packet.Authenticate_Player extended with character fields
+- **fix**: Elemental[] to byte[] conversion for packet serialization
+- **chore**: Merged 42 commits from feature/authoritative-architecture to main
+
+### AUM-Headless (Server)
+- **fix**: Character sync - server overrides MatchKeeper avatar data with client's actual selection
+- **fix**: Socket.cs logs client character data on auth
+- **fix**: PlayerManager.AuthenticatePlayer() accepts full packet and overrides avatar
+- **chore**: Merged 30 commits from feature/authoritative-architecture to main
+
+### Root Cause
+Server was using hardcoded MatchKeeper avatar data (defaulting to Amuktha) instead of client's actual character selection. This caused ranged characters (MantraMuktha) to be treated as melee, blocking the Aiming state and causing position pullback.
+
+### Result
+- ✅ Zero errors in playtest
+- ✅ Butter smooth gameplay
+- ✅ No jitter or snapping
+- ✅ Ranged aiming works perfectly
+- ✅ All 5 fighting styles working correctly
+
+---
+
+## [2026-01-29]
+
+### AUM-The-Epic (Client)
+- **fix**: Micro-jitter fixed - SimulationManager threshold increased to 1.0f
+- **fix**: Blocked duplicate input events in same frame
+- **fix**: PlayerInput logic overhauled for clean Melee vs Ranged behavior
+- **feat**: Input system reset on match start
+- **fix**: JitterCompensator EMA smoothing (low-pass filter)
+- **fix**: VisualRootController rotation slerp speed increased
+- **fix**: 5cm deadzone added for tiny drifts
+- **fix**: Multi-tick interpolation jitter in GameManager
+- **fix**: Character mesh parented to VisualRoot (smooth) instead of Player (discrete)
+
+### AUM-Headless (Server)
+- **fix**: Bot Melee Damage - 1.0m handicap range and 30-degree angle grace
+- **fix**: Spell System - mapped initialization by Elemental enum
+- **fix**: Water Elemental - auto-calibrate moveSpeed from distance/duration
+- **fix**: Tick-to-seconds conversion mismatch for bot timing
+
+---
+
+## [2026-01-24]
+
+### AUM-Headless
+- **fix**: StateManager idempotent state registration - prevents ArgumentException on duplicate Add()
+- **fix**: Stamina regeneration trap - eliminated negative cooldown blocking regen forever
+- **fix**: PlayerBase stamina cooldown changed from -1f (trap) to 2f (direct cooldown)
+- **fix**: PlayerManager stamina regen simplified to 2-state system (removed negative check)
+- **feat**: Focus system debug logging - ConsumeFocusSegments visibility for debugging
+- **feat**: StateManager defensive logging for unregistered state transitions
+
+### Deployment
+- **chore**: Hetzner VPS production deployment - 65.109.133.129:7777
+- **chore**: Clean server directory structure - removed 89MB of old builds
+- **feat**: Orchestrator dual build support - Mac/Windows build selection via API
+- **feat**: Systemd service auto-restart (aum-jan24) with dedicated logging
+- **docs**: Comprehensive Hetzner deployment guide with API reference
+
+### Fixes Impact
+- ✅ MantraMuktha Aiming state now works (state registration fixed)
+- ✅ Stamina regenerates correctly after dodge (cooldown trap eliminated)
+- ✅ Dodge snapback auto-resolved (was symptom of stamina issue)
+- ✅ Focus generation visible in logs (debugging enabled)
+
+---
+
 ## [2026-01-23]
 
 ### AUM-The-Epic (Client)

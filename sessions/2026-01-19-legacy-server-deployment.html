@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>AUM Legacy Server Deployment</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">AUM Legacy Server Deployment</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#aum-legacy-server-deployment-experiment"
+id="toc-aum-legacy-server-deployment-experiment">AUM Legacy Server
+Deployment Experiment</a>
+<ul>
+<li><a href="#intent-motivation" id="toc-intent-motivation">1. INTENT
+&amp; MOTIVATION</a></li>
+<li><a href="#architecture-overview" id="toc-architecture-overview">2.
+ARCHITECTURE OVERVIEW</a></li>
+<li><a href="#project-locations" id="toc-project-locations">3. PROJECT
+LOCATIONS</a></li>
+<li><a href="#timeline-of-changes" id="toc-timeline-of-changes">4.
+TIMELINE OF CHANGES</a></li>
+<li><a href="#deployment-process" id="toc-deployment-process">5.
+DEPLOYMENT PROCESS</a></li>
+<li><a href="#final-server-state" id="toc-final-server-state">6. FINAL
+SERVER STATE</a></li>
+<li><a href="#client-configuration" id="toc-client-configuration">7.
+CLIENT CONFIGURATION</a></li>
+<li><a href="#results-summary" id="toc-results-summary">8. RESULTS
+SUMMARY</a></li>
+<li><a href="#lessons-learned" id="toc-lessons-learned">9. LESSONS
+LEARNED</a></li>
+<li><a href="#files-modified" id="toc-files-modified">10. FILES
+MODIFIED</a></li>
+<li><a href="#next-steps" id="toc-next-steps">11. NEXT STEPS</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="aum-legacy-server-deployment-experiment">AUM Legacy Server
+Deployment Experiment</h1>
+<p><strong>Date:</strong> January 19, 2026 <strong>Duration:</strong> ~3
+hours <strong>Status:</strong> SUCCESS - Server running, awaiting client
+test</p>
+<hr />
+<h2 id="intent-motivation">1. INTENT &amp; MOTIVATION</h2>
+<h3 id="problem-statement">Problem Statement</h3>
+<p>The current AUM-Epic (client) and AUM-Headless (server) projects are
+experiencing “glitchy” multiplayer behavior. Rather than debugging the
+complex new architecture, the decision was made to restore a
+known-working state using the legacy October 2025 builds.</p>
+<h3 id="goal">Goal</h3>
+<p>Deploy the legacy AUM server to Hetzner VPS and configure a legacy
+client to connect directly, bypassing the old MatchKeeper/WebSocket
+orchestration infrastructure.</p>
+<h3 id="success-criteria">Success Criteria</h3>
+<ol type="1">
+<li>Server runs on Hetzner (65.109.133.129:6006) without crashing</li>
+<li>Server waits for human player connection (doesn’t auto-end
+match)</li>
+<li>Client can connect and authenticate</li>
+<li>Gameplay functions correctly</li>
+</ol>
+<hr />
+<h2 id="architecture-overview">2. ARCHITECTURE OVERVIEW</h2>
+<h3 id="legacy-system-october-2025">Legacy System (October 2025)</h3>
+<pre><code>┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│   Game Client   │────▶│   MatchKeeper    │────▶│   Game Server   │
+│  (Unity Build)  │     │   (WebSocket)    │     │  (Unity Headless)│
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+        │                       │                        │
+        │    Session UUID       │    avatarList          │
+        └───────────────────────┴────────────────────────┘</code></pre>
+<h3 id="test-mode-bypass-our-solution">Test Mode Bypass (Our
+Solution)</h3>
+<pre><code>┌─────────────────┐                              ┌─────────────────┐
+│   Game Client   │─────── Direct UDP ──────────▶│   Game Server   │
+│ + TestModeClient│      65.109.133.129:6006     │ + TestModeManager│
+└─────────────────┘                              └─────────────────┘
+        │                                                │
+        │         Matching Session UUIDs                 │
+        │    3d46e7bc-914e-fca2-c3ae-1ae23d72aa34       │
+        └────────────────────────────────────────────────┘</code></pre>
+<hr />
+<h2 id="project-locations">3. PROJECT LOCATIONS</h2>
+<table>
+<colgroup>
+<col style="width: 37%" />
+<col style="width: 25%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr>
+<th>Project</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Legacy Client</td>
+<td><code>/Users/mac/Documents/GitHub/AUM-Unity-Staging-Legacy/</code></td>
+<td>Unity client build</td>
+</tr>
+<tr>
+<td>Legacy Server</td>
+<td><code>/Users/mac/Documents/GitHub/AUM-Unity-Server-Legacy/</code></td>
+<td>Unity headless server</td>
+</tr>
+<tr>
+<td>Server Deploy</td>
+<td><code>/Users/mac/Documents/GitHub/server legacy/</code></td>
+<td>Built server binary</td>
+</tr>
+<tr>
+<td>Hetzner Server</td>
+<td><code>root@65.109.133.129:/root/server/</code></td>
+<td>Production deployment</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="timeline-of-changes">4. TIMELINE OF CHANGES</h2>
+<h3 id="phase-1-initial-setup-1700-utc">Phase 1: Initial Setup (~17:00
+UTC)</h3>
+<h4 id="testmodemanager.cs-server">4.1 TestModeManager.cs (Server)</h4>
+<p><strong>File:</strong>
+<code>AUM-Unity-Server-Legacy/Assets/Scripts/Managers/TestModeManager.cs</code></p>
+<p><strong>Purpose:</strong> Bypass MatchKeeper orchestration, populate
+avatarList directly</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Session ID constants for deterministic matching</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">const</span> <span class="dt">string</span> PLAYER_1_SESSION <span class="op">=</span> <span class="st">&quot;test-player-1-session&quot;</span><span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">const</span> <span class="dt">string</span> BOT_1_SESSION <span class="op">=</span> <span class="st">&quot;test-bot-1-session&quot;</span><span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">static</span> <span class="dt">void</span> <span class="fu">Initialize</span><span class="op">(</span><span class="dt">int</span> port<span class="op">,</span> MatchType matchType<span class="op">,</span> <span class="dt">bool</span> includeBot<span class="op">,</span> <span class="dt">bool</span> isFirstMatch<span class="op">)</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Create test avatars directly in avatarList</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AddTestAvatar</span><span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="st">&quot;TestPlayer1&quot;</span><span class="op">,</span> PLAYER_1_SESSION<span class="op">,</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                  FightingStyles<span class="op">.</span><span class="fu">Amuktha</span><span class="op">,</span> TrinityGods<span class="op">.</span><span class="fu">Brahma</span><span class="op">,</span> <span class="kw">false</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>includeBot<span class="op">)</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">AddTestAvatar</span><span class="op">(</span><span class="dv">2</span><span class="op">,</span> <span class="st">&quot;TestBot&quot;</span><span class="op">,</span> BOT_1_SESSION<span class="op">,</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                      FightingStyles<span class="op">.</span><span class="fu">MukthaMuktha</span><span class="op">,</span> TrinityGods<span class="op">.</span><span class="fu">Shiva</span><span class="op">,</span> <span class="kw">true</span><span class="op">,</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Initialize server socket on specified port</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    NetworkManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">InitializeServer</span><span class="op">(</span>port<span class="op">);</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">// MD5 hash creates deterministic GUID from string</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="kw">private</span> <span class="kw">static</span> Guid <span class="fu">StringToGuid</span><span class="op">(</span><span class="dt">string</span> input<span class="op">)</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> <span class="op">(</span>MD5 md5 <span class="op">=</span> MD5<span class="op">.</span><span class="fu">Create</span><span class="op">())</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        <span class="dt">byte</span><span class="op">[]</span> hash <span class="op">=</span> md5<span class="op">.</span><span class="fu">ComputeHash</span><span class="op">(</span>Encoding<span class="op">.</span><span class="fu">UTF8</span><span class="op">.</span><span class="fu">GetBytes</span><span class="op">(</span>input<span class="op">));</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span> <span class="kw">new</span> <span class="fu">Guid</span><span class="op">(</span>hash<span class="op">);</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h4 id="testmodeclient.cs-client">4.2 TestModeClient.cs (Client)</h4>
+<p><strong>File:</strong>
+<code>AUM-Unity-Staging-Legacy/Assets/Scripts/Managers/TestModeClient.cs</code></p>
+<p><strong>Purpose:</strong> Configure client for direct server
+connection</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> TestModeClient <span class="op">:</span> MonoBehaviour</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="dt">string</span> serverIP <span class="op">=</span> <span class="st">&quot;65.109.133.129&quot;</span><span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="dt">int</span> serverPort <span class="op">=</span> <span class="dv">6006</span><span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="kw">static</span> <span class="dt">void</span> <span class="fu">SetupForTestMode</span><span class="op">()</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Generate matching session UUID</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        Guid sessionGuid <span class="op">=</span> <span class="fu">StringToGuid</span><span class="op">(</span><span class="st">&quot;test-player-1-session&quot;</span><span class="op">);</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        SessionManager<span class="op">.</span><span class="fu">sessionUUID</span> <span class="op">=</span> sessionGuid<span class="op">.</span><span class="fu">ToString</span><span class="op">();</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Setup match_Avatars array (prevents null reference)</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">SetupMatchAvatars</span><span class="op">();</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Set local player ID</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        SessionManager<span class="op">.</span><span class="fu">localPlayerID</span> <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">private</span> <span class="kw">static</span> <span class="dt">void</span> <span class="fu">SetupMatchAvatars</span><span class="op">()</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>        SessionManager<span class="op">.</span><span class="fu">match_Avatars</span> <span class="op">=</span> <span class="kw">new</span> SessionManager<span class="op">.</span><span class="fu">Avatar</span><span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        SessionManager<span class="op">.</span><span class="fu">match_Avatars</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">=</span> <span class="kw">new</span> SessionManager<span class="op">.</span><span class="fu">Avatar</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>            playerID <span class="op">=</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>            playerName <span class="op">=</span> <span class="st">&quot;TestPlayer1&quot;</span><span class="op">,</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>            sessionID <span class="op">=</span> <span class="fu">StringToGuid</span><span class="op">(</span><span class="st">&quot;test-player-1-session&quot;</span><span class="op">).</span><span class="fu">ToString</span><span class="op">(),</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>            <span class="co">// ... other fields</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        <span class="op">};</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        SessionManager<span class="op">.</span><span class="fu">match_Avatars</span><span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="kw">new</span> SessionManager<span class="op">.</span><span class="fu">Avatar</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>            playerID <span class="op">=</span> <span class="dv">2</span><span class="op">,</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>            playerName <span class="op">=</span> <span class="st">&quot;TestBot&quot;</span><span class="op">,</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>            isBot <span class="op">=</span> <span class="kw">true</span><span class="op">,</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>            <span class="co">// ... other fields</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        <span class="op">};</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<hr />
+<h3 id="phase-2-first-bug-fixes-1715-utc">Phase 2: First Bug Fixes
+(~17:15 UTC)</h3>
+<h4 id="mkmanager.cs---null-reference-fix">4.3 MKManager.cs - Null
+Reference Fix</h4>
+<p><strong>File:</strong>
+<code>AUM-Unity-Server-Legacy/Assets/Scripts/Managers/MKManager.cs</code></p>
+<p><strong>Problem:</strong> <code>NullReferenceException</code> when
+match ended because MKManager wasn’t initialized in test mode</p>
+<p><strong>Fix:</strong></p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">static</span> <span class="dt">void</span> <span class="fu">SendMKMatchEnd</span><span class="op">()</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// In test mode, MKManager is not initialized - skip reporting</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>mkSocket <span class="op">==</span> <span class="kw">null</span><span class="op">)</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span><span class="st">&quot;[MKManager] Skipping match end report (test mode - no MatchKeeper connection)&quot;</span><span class="op">);</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... rest of original code</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h4 id="botmanager.cs---premature-match-end-fix">4.4 BotManager.cs -
+Premature Match End Fix</h4>
+<p><strong>File:</strong>
+<code>AUM-Unity-Server-Legacy/Assets/Scripts/Managers/BotManager.cs</code></p>
+<p><strong>Problem:</strong> <code>CheckBotQuickComplete()</code> ended
+match immediately because no human players were in activePlayerList</p>
+<p><strong>Fix:</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Line 13: New tracking flag</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">[</span>HideInInspector<span class="op">]</span> <span class="kw">public</span> <span class="dt">bool</span> humanPlayerEverConnected <span class="op">=</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Lines 80-88: Track human connection</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">CheckBotQuickComplete</span><span class="op">()</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Track if a human player has ever connected</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>activePlayerList<span class="op">.</span><span class="fu">Count</span> <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        humanPlayerEverConnected <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Only trigger quick complete if a human was connected and then left</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>activePlayerList<span class="op">.</span><span class="fu">Count</span> <span class="op">==</span> <span class="dv">0</span> <span class="op">&amp;&amp;</span> <span class="op">!</span>matchEnded <span class="op">&amp;&amp;</span> humanPlayerEverConnected<span class="op">)</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        GameManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">EndGame</span><span class="op">(</span>winnerIndex<span class="op">,</span> loserIndex<span class="op">,</span> EndReason<span class="op">.</span><span class="fu">PLAYER_LEFT</span><span class="op">);</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<hr />
+<h3 id="phase-3-port-configuration-1725-utc">Phase 3: Port Configuration
+(~17:25 UTC)</h3>
+<h4 id="gamemanager.cs---hardcoded-port">4.5 GameManager.cs - Hardcoded
+Port</h4>
+<p><strong>File:</strong>
+<code>AUM-Unity-Server-Legacy/Assets/Scripts/Managers/GameManager.cs</code></p>
+<p><strong>Problem:</strong> Unity scene serialization was overriding
+the port value to 7777 instead of 6006</p>
+<p><strong>Fix:</strong></p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Lines 94-101: Hardcode port to avoid scene override</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> <span class="op">(</span>useTestMode<span class="op">)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span><span class="st">&quot;[GameManager] Using TEST MODE - bypassing MatchKeeper&quot;</span><span class="op">);</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Hardcode port 6006 to avoid scene serialization override</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    TestModeManager<span class="op">.</span><span class="fu">Initialize</span><span class="op">(</span><span class="dv">6006</span><span class="op">,</span> testMatchType<span class="op">,</span> <span class="kw">true</span><span class="op">,</span> testIsFirstMatch<span class="op">);</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    TestModeManager<span class="op">.</span><span class="fu">LogSessionIds</span><span class="op">();</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<hr />
+<h3 id="phase-4-match-state-fix-1740-utc">Phase 4: Match State Fix
+(~17:40 UTC)</h3>
+<h4 id="gamemanager.cs---startmatchteleport-bypass">4.6 GameManager.cs -
+StartMatchTeleport Bypass</h4>
+<p><strong>File:</strong>
+<code>AUM-Unity-Server-Legacy/Assets/Scripts/Managers/GameManager.cs</code></p>
+<p><strong>Problem:</strong> During TELEPORT→MATCH transition,
+<code>StartMatchTeleport()</code> called <code>EndGame()</code> because
+<code>playerList.Count != GetMatchMaxPlayers()</code> (only bot was
+connected, expecting 2 players)</p>
+<p><strong>Root Cause Analysis:</strong></p>
+<pre><code>Match State Flow: NONE → PREMATCH → TELEPORT → MATCH
+                                      ↓
+                          StartMatchTeleport() checks player count
+                                      ↓
+                          Only 1 player (bot) ≠ 2 expected
+                                      ↓
+                          EndGame() called prematurely</code></pre>
+<p><strong>Fix:</strong></p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Lines 166-200: Test mode bypass</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">StartMatchTeleport</span><span class="op">()</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// In test mode, skip player count validation - wait for human to connect</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useTestMode<span class="op">)</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">foreach</span><span class="op">(</span>Player player <span class="kw">in</span> PlayerManager<span class="op">.</span><span class="fu">playerList</span><span class="op">.</span><span class="fu">Values</span><span class="op">)</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>            player<span class="op">.</span><span class="fu">playerData</span><span class="op">.</span><span class="fu">willPower</span> <span class="op">=</span> player<span class="op">.</span><span class="fu">playerStats</span><span class="op">.</span><span class="fu">willPower</span><span class="op">;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>            player<span class="op">.</span><span class="fu">playerData</span><span class="op">.</span><span class="fu">stamina</span> <span class="op">=</span> player<span class="op">.</span><span class="fu">playerStats</span><span class="op">.</span><span class="fu">stamina</span><span class="op">;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span><span class="op">;</span> <span class="co">// Skip validation, let match proceed</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Original validation code (for production with MatchKeeper)</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>playerList<span class="op">.</span><span class="fu">Count</span> <span class="op">!=</span> <span class="fu">GetMatchMaxPlayers</span><span class="op">())</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        <span class="fu">EndGame</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> EndReason<span class="op">.</span><span class="fu">PLAYER_LEFT</span><span class="op">);</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... rest of teleport logic</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h4 id="gamemanager.cs---checkmatchendcondition-guard">4.7
+GameManager.cs - CheckMatchEndCondition Guard</h4>
+<p><strong>File:</strong>
+<code>AUM-Unity-Server-Legacy/Assets/Scripts/Managers/GameManager.cs</code></p>
+<p><strong>Additional safety:</strong></p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Lines 462-466</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">CheckMatchEndCondition</span><span class="op">()</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// In test mode, don&#39;t end match until a human has connected at least once</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> <span class="op">(</span>useTestMode <span class="op">&amp;&amp;</span> BotManager <span class="op">!=</span> <span class="kw">null</span> <span class="op">&amp;&amp;</span> <span class="op">!</span>BotManager<span class="op">.</span><span class="fu">humanPlayerEverConnected</span><span class="op">)</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">return</span><span class="op">;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... win condition checks</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<hr />
+<h2 id="deployment-process">5. DEPLOYMENT PROCESS</h2>
+<h3 id="build-server-unity">5.1 Build Server (Unity)</h3>
+<pre><code>1. Open Unity project: AUM-Unity-Server-Legacy
+2. File → Build Settings
+3. Target Platform: Linux
+4. Architecture: x86_64
+5. Server Build: Checked
+6. Build to: /Users/mac/Documents/GitHub/server legacy/</code></pre>
+<h3 id="deploy-to-hetzner">5.2 Deploy to Hetzner</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create tarball</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="st">&quot;/Users/mac/Documents/GitHub&quot;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tar</span> <span class="at">-czvf</span> server-legacy.tar.gz <span class="st">&quot;server legacy&quot;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Upload to server</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ex">sshpass</span> <span class="at">-p</span> <span class="st">&#39;brahman&#39;</span> scp server-legacy.tar.gz root@65.109.133.129:/root/</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract on server</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="ex">sshpass</span> <span class="at">-p</span> <span class="st">&#39;brahman&#39;</span> ssh root@65.109.133.129 <span class="st">&quot;cd /root &amp;&amp; rm -rf server &amp;&amp; tar -xzvf server-legacy.tar.gz &amp;&amp; mv &#39;server legacy&#39; server&quot;</span></span></code></pre></div>
+<h3 id="start-server">5.3 Start Server</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Kill any existing server</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">sshpass</span> <span class="at">-p</span> <span class="st">&#39;brahman&#39;</span> ssh root@65.109.133.129 <span class="st">&quot;pkill -f &#39;server legacy&#39; || true&quot;</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Start new server</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="ex">sshpass</span> <span class="at">-p</span> <span class="st">&#39;brahman&#39;</span> ssh root@65.109.133.129 <span class="st">&quot;cd /root/server &amp;&amp; chmod +x &#39;server legacy.x86_64&#39; &amp;&amp; nohup &#39;./server legacy.x86_64&#39; -logFile /root/server.log -batchmode -nographics &gt; /dev/null 2&gt;&amp;1 &amp;&quot;</span></span></code></pre></div>
+<h3 id="verify-server">5.4 Verify Server</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check process</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">sshpass</span> <span class="at">-p</span> <span class="st">&#39;brahman&#39;</span> ssh root@65.109.133.129 <span class="st">&quot;ps aux | grep legacy&quot;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check logs</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="ex">sshpass</span> <span class="at">-p</span> <span class="st">&#39;brahman&#39;</span> ssh root@65.109.133.129 <span class="st">&quot;tail -50 /root/server.log&quot;</span></span></code></pre></div>
+<hr />
+<h2 id="final-server-state">6. FINAL SERVER STATE</h2>
+<h3 id="server-logs-success">Server Logs (Success)</h3>
+<pre><code>[GameManager] Using TEST MODE - bypassing MatchKeeper
+[TestMode] Initializing test match - Port:6006 Type:SOLO_1V1 Bot:True FirstMatch:False
+Server Socket has been intiialized Port:6006
+[TestMode] Added avatar: TestPlayer1 (ID:1, Team:0, Bot:False, Session:3d46e7bc-914e-fca2-c3ae-1ae23d72aa34)
+[TestMode] Added avatar: TestBot (ID:2, Team:1, Bot:True, Session:d69717f4-e785-49f3-f80b-823fb889dd45)
+[TestMode] Match ready - waiting for client connections
+[2][TestBot] - Logged in as MukthaMuktha (Shiva) Team: 1 Bot:True
+Bot functionality initialized for TestBot [MukthaMuktha]</code></pre>
+<h3 id="connection-details">Connection Details</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Server IP</td>
+<td>65.109.133.129</td>
+</tr>
+<tr>
+<td>Server Port</td>
+<td>6006</td>
+</tr>
+<tr>
+<td>Protocol</td>
+<td>UDP (LiteNetLib)</td>
+</tr>
+<tr>
+<td>Player 1 Session</td>
+<td>3d46e7bc-914e-fca2-c3ae-1ae23d72aa34</td>
+</tr>
+<tr>
+<td>Bot Session</td>
+<td>d69717f4-e785-49f3-f80b-823fb889dd45</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="client-configuration">7. CLIENT CONFIGURATION</h2>
+<h3 id="testmodeclient-settings">TestModeClient Settings</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">static</span> <span class="dt">string</span> serverIP <span class="op">=</span> <span class="st">&quot;65.109.133.129&quot;</span><span class="op">;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">static</span> <span class="dt">int</span> serverPort <span class="op">=</span> <span class="dv">6006</span><span class="op">;</span></span></code></pre></div>
+<h3 id="build-client-unity">Build Client (Unity)</h3>
+<pre><code>1. Open Unity project: AUM-Unity-Staging-Legacy
+2. Ensure TestModeClient.cs has correct IP/port
+3. File → Build Settings
+4. Target Platform: Windows (for testing on Windows PC)
+5. Build and run</code></pre>
+<h3 id="known-client-issue">Known Client Issue</h3>
+<p>Mac cannot run the legacy client due to ARM64/x86_64 native DLL
+mismatch in LiteNetLib. Testing must be done from Windows PC.</p>
+<hr />
+<h2 id="results-summary">8. RESULTS SUMMARY</h2>
+<h3 id="achieved">Achieved</h3>
+<table>
+<thead>
+<tr>
+<th>Goal</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Server runs on Hetzner</td>
+<td>✅ Running on 65.109.133.129:6006</td>
+</tr>
+<tr>
+<td>Server waits for human</td>
+<td>✅ No premature EndGame</td>
+</tr>
+<tr>
+<td>Bot initializes correctly</td>
+<td>✅ MukthaMuktha + Shiva ready</td>
+</tr>
+<tr>
+<td>Session IDs match</td>
+<td>✅ Deterministic MD5 GUIDs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pending">Pending</h3>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client connection test</td>
+<td>⏳ Needs Windows PC</td>
+</tr>
+<tr>
+<td>Gameplay verification</td>
+<td>⏳ After client connects</td>
+</tr>
+<tr>
+<td>Addressables loading</td>
+<td>⚠️ May need client-side fixes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="lessons-learned">9. LESSONS LEARNED</h2>
+<h3 id="scene-serialization-overrides-code">1. Scene Serialization
+Overrides Code</h3>
+<p>Unity scene values can override script defaults. When debugging “why
+isn’t my value being used”, check the scene inspector.</p>
+<h3 id="match-state-machine-complexity">2. Match State Machine
+Complexity</h3>
+<p>The legacy code has multiple places that can trigger
+<code>EndGame()</code>: - BotManager.CheckBotQuickComplete() -
+GameManager.StartMatchTeleport() - GameManager.CheckMatchEndCondition()
+- MKManager.SendMKMatchEnd()</p>
+<p>Each needed a test mode bypass.</p>
+<h3 id="session-uuid-matching-is-critical">3. Session UUID Matching is
+Critical</h3>
+<p>Client and server must use identical session UUIDs. Using MD5 hash of
+deterministic strings ensures matching.</p>
+<h3 id="iterative-vs-holistic-debugging">4. Iterative vs Holistic
+Debugging</h3>
+<p>Initial iterative approach (fix one error → find next) was
+frustrating. A comprehensive code flow analysis would have identified
+all issues upfront:</p>
+<pre><code>Client Connect → Server Auth → Match State → Teleport → Match Start
+                                    ↓
+                              Multiple EndGame() triggers</code></pre>
+<hr />
+<h2 id="files-modified">10. FILES MODIFIED</h2>
+<h3 id="server-aum-unity-server-legacy">Server
+(AUM-Unity-Server-Legacy)</h3>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>File</th>
+<th>Changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GameManager.cs</td>
+<td>Test mode init, port hardcode, StartMatchTeleport bypass,
+CheckMatchEndCondition guard</td>
+</tr>
+<tr>
+<td>BotManager.cs</td>
+<td>humanPlayerEverConnected tracking</td>
+</tr>
+<tr>
+<td>MKManager.cs</td>
+<td>Null check for test mode</td>
+</tr>
+<tr>
+<td>TestModeManager.cs</td>
+<td>New file - test match setup</td>
+</tr>
+</tbody>
+</table>
+<h3 id="client-aum-unity-staging-legacy">Client
+(AUM-Unity-Staging-Legacy)</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TestModeClient.cs</td>
+<td>New file - direct connection setup</td>
+</tr>
+<tr>
+<td>SessionManager.cs</td>
+<td>skipWebSocket flag integration</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="next-steps">11. NEXT STEPS</h2>
+<ol type="1">
+<li><strong>Build Windows Client</strong>
+<ul>
+<li>Open AUM-Unity-Staging-Legacy in Unity</li>
+<li>Build for Windows Standalone</li>
+<li>Transfer to Windows PC</li>
+</ul></li>
+<li><strong>Test Connection</strong>
+<ul>
+<li>Run client on Windows</li>
+<li>Verify authentication packet sent</li>
+<li>Check server logs for player connection</li>
+</ul></li>
+<li><strong>Verify Gameplay</strong>
+<ul>
+<li>Test combat against bot</li>
+<li>Verify damage registration</li>
+<li>Check state synchronization</li>
+</ul></li>
+<li><strong>Document Results</strong>
+<ul>
+<li>Update this document with test results</li>
+<li>Note any additional fixes needed</li>
+</ul></li>
+</ol>
+<hr />
+<p><em>Document generated: January 19, 2026</em> <em>Server Status:
+RUNNING (65.109.133.129:6006)</em></p>
+</body>
+</html>

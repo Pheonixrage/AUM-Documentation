@@ -122,9 +122,64 @@ The genius solution: Both client and server generate the same UUID from the same
 
 ---
 
-## Chapter 6: The Road Ahead
+## Chapter 6: The Authoritative Architecture Sprint (January 22-30, 2026)
 
-### Republic Day Target: January 26, 2026
+### The Smoothness Quest
+
+After the Republic Day push, focus shifted to **butter smooth gameplay**. The multiplayer was working, but there were issues:
+- Visual jitter during movement
+- Character snapping during reconciliation
+- Dodge feeling inconsistent
+
+**The Jitter Killers:**
+```
+Jan 22: Position Lock for dodge - blocks reconciliation during movement
+Jan 23: Visual smoothing tuning - slower reconciliation, higher thresholds
+Jan 28: EMA smoothing on JitterCompensator - no sudden speed snags
+Jan 29: VisualRoot parenting - mesh on smooth transform, not discrete
+```
+
+### The 3-Day Bug Hunt (January 28-30)
+
+Then came the **ranged attack pullback bug**. MantraMuktha (staff) players couldn't aim properly - their position would snap back immediately.
+
+**Day 1-2: Wrong Trail**
+- Thought it was reconciliation issue
+- Tried adjusting thresholds
+- Added more logging
+- Nothing worked
+
+**Day 3: The Revelation**
+
+Server logs finally revealed the truth:
+```
+Auth packet: style=MantraMuktha god=Vishnu
+BEFORE override: Style=Amuktha  ← SERVER HAD WRONG CHARACTER!
+AFTER override: Style=MantraMuktha
+```
+
+The server was using **MatchKeeper's hardcoded avatar data** instead of the client's actual character selection. When client sent "I'm MantraMuktha (ranged)", server thought "You're Amuktha (melee)" and blocked the Aiming state.
+
+**The Fix:**
+1. Extended `Authenticate_Player` packet with character fields
+2. Client sends `fightingStyle`, `godSelected`, `elementals` on auth
+3. Server overrides avatar data with client's actual selection
+
+**The Commit:**
+```
+🏆 LEGENDARY FIX: Character Sync & Butter Smooth Combat
+```
+
+### The Merge (January 30, 2026)
+
+With everything working:
+- **Client:** 42 commits merged to main
+- **Server:** 30 commits merged to main
+- **Result:** Zero errors, butter smooth gameplay
+
+---
+
+## Chapter 7: The Road Ahead
 
 | Day | Date | Task |
 |-----|------|------|
@@ -170,4 +225,4 @@ Session UUIDs matched:       FINALLY
 
 *"In the chaos of networking bugs, we found not just a connection, but a path forward."*
 
-*Last Updated: January 20, 2026*
+*Last Updated: January 30, 2026*
