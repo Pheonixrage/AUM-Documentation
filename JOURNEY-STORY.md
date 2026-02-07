@@ -122,75 +122,76 @@ The genius solution: Both client and server generate the same UUID from the same
 
 ---
 
-## Chapter 6: The Authoritative Architecture Sprint (January 22-30, 2026)
+## Chapter 6: The LEGENDARY Elemental Fix (February 7, 2026)
 
-### The Smoothness Quest
+### The Problem
 
-After the Republic Day push, focus shifted to **butter smooth gameplay**. The multiplayer was working, but there were issues:
-- Visual jitter during movement
-- Character snapping during reconciliation
-- Dodge feeling inconsistent
+Elemental buttons (1-4) weren't working like the Attack button. Expected behavior: HOLD = enter aiming state, RELEASE = cast spell. But only Fire elemental worked - other elements (ETHER, EARTH) spawned Fire spells!
 
-**The Jitter Killers:**
+### The Hunt
+
 ```
-Jan 22: Position Lock for dodge - blocks reconciliation during movement
-Jan 23: Visual smoothing tuning - slower reconciliation, higher thresholds
-Jan 28: EMA smoothing on JitterCompensator - no sudden speed snags
-Jan 29: VisualRoot parenting - mesh on smooth transform, not discrete
+First clue: CastManager logs showed spellIndex=0 (FIRE) for all spells
+Second clue: matchAvatar.elementalSelected had correct values (96=ETHER, 128=EARTH)
+Third clue: Two data sources for elementals...
 ```
 
-### The 3-Day Bug Hunt (January 28-30)
+**The Revelation:**
+- `InterfaceManager.Instance.Player_elementals` → STALE (set to FIRE defaults)
+- `player.m_elementals` → AUTHORITATIVE (from matchAvatar.elementalSelected)
 
-Then came the **ranged attack pullback bug**. MantraMuktha (staff) players couldn't aim properly - their position would snap back immediately.
+CastManager was using the wrong source!
 
-**Day 1-2: Wrong Trail**
-- Thought it was reconciliation issue
-- Tried adjusting thresholds
-- Added more logging
-- Nothing worked
+### The Double Fix
 
-**Day 3: The Revelation**
+**Client Side (CastManager.cs):**
+```csharp
+// BEFORE (WRONG):
+Elemental[] elementals = InterfaceManager.Instance.Player_elementals;
 
-Server logs finally revealed the truth:
-```
-Auth packet: style=MantraMuktha god=Vishnu
-BEFORE override: Style=Amuktha  ← SERVER HAD WRONG CHARACTER!
-AFTER override: Style=MantraMuktha
+// AFTER (CORRECT):
+Elemental[] elementals = player.m_elementals;
 ```
 
-The server was using **MatchKeeper's hardcoded avatar data** instead of the client's actual character selection. When client sent "I'm MantraMuktha (ranged)", server thought "You're Amuktha (melee)" and blocked the Aiming state.
+**Server Side (PlayerManager.cs - ProcessAvatarUpload):**
+```csharp
+// Server wasn't updating player.elementals from AVATARUPLOAD!
+player.elementals = new Elemental[elementalCount];
+for (int i = 0; i < elementalCount; i++)
+    player.elementals[i] = new Elemental(data.elementalSelected[i]);
 
-**The Fix:**
-1. Extended `Authenticate_Player` packet with character fields
-2. Client sends `fightingStyle`, `godSelected`, `elementals` on auth
-3. Server overrides avatar data with client's actual selection
-
-**The Commit:**
+// Reinitialize CastManager with correct elementals
+player.character.castManager = player.pGameObject.AddComponent<CastManager>()
+    .Instantiate(player.elementals, player);
 ```
-🏆 LEGENDARY FIX: Character Sync & Butter Smooth Combat
+
+### Bonus Fixes
+
+1. **Shield Cast on Drag Down** - Wait for drag direction in BEGINDRAG before entering aiming
+2. **Focus Timing** - Use target fill amount instead of animated DOTween value
+3. **SpecialAbility Button** - Same pattern fix as elemental buttons
+
+### The Commit
+
+```
+[LEGENDARY] fix: Elemental/SpecialAbility controls fully working
+[LEGENDARY] fix: Server elemental sync from AVATARUPLOAD
 ```
 
-### The Merge (January 30, 2026)
-
-With everything working:
-- **Client:** 42 commits merged to main
-- **Server:** 30 commits merged to main
-- **Result:** Zero errors, butter smooth gameplay
+> "hey cool this is working now... this will be the same for all fighting styles right?"
 
 ---
 
 ## Chapter 7: The Road Ahead
 
-| Day | Date | Task |
-|-----|------|------|
-| 1 | Jan 19 | Documentation |
-| 2 | Jan 20 | PC Input Fixes |
-| 3 | Jan 21 | Main Menu UI Wiring |
-| 4 | Jan 22 | Addressables Fix |
-| 5 | Jan 23 | Android Build |
-| 6 | Jan 24 | Play Store Submit |
-| 7 | Jan 25 | Buffer |
-| 8 | **Jan 26** | **REPUBLIC DAY LAUNCH** |
+### Post-Launch Development
+
+| Date | Milestone | Status |
+|------|-----------|--------|
+| Jan 26 | Republic Day Target | ✓ Achieved |
+| Feb 7 | LEGENDARY Elemental Fix | ✓ Complete |
+| TBD | Addressables CDN | Pending |
+| TBD | PlayFab Matchmaking | In Progress |
 
 ---
 
@@ -213,16 +214,20 @@ Sometimes the old way is the right way. Legacy doesn't mean broken.
 ## The Credits
 
 ```
-Hours of Debugging:          ~6+
-"It's working!" moments:     2
-"Why isn't it working?!":    47+
+Hours of Debugging:          ~10+
+"It's working!" moments:     4
+"Why isn't it working?!":    100+
 Firewalls discovered:        2 (one too many)
 DLLs incompatible:           1 (that was enough)
 Session UUIDs matched:       FINALLY
+LEGENDARY commits:           2 (Feb 7, 2026)
+Elemental data sources:      2 (one too many)
 ```
 
 ---
 
 *"In the chaos of networking bugs, we found not just a connection, but a path forward."*
 
-*Last Updated: January 30, 2026*
+*"When your elementals all cast Fire, check if you're reading from the past or the present."*
+
+*Last Updated: February 7, 2026*
