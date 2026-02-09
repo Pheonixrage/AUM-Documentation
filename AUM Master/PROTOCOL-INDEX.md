@@ -1,9 +1,9 @@
 # AUM Protocol Documentation - Master Index
 
-> **Version:** 1.3
-> **Last Updated:** January 21, 2026
-> **Total Documents:** 18
-> **Total Lines of Documentation:** ~23,500+
+> **Version:** 1.5
+> **Last Updated:** February 9, 2026
+> **Total Documents:** 20
+> **Total Lines of Documentation:** ~25,500+
 
 ---
 
@@ -29,6 +29,8 @@
 | 16 | [PROTOCOL-16-SHIELDS.md](PROTOCOL-16-SHIELDS.md) | Shield System | ~450 | ElementalShield mechanics, interactions |
 | 17 | [PROTOCOL-17-UTILITIES.md](PROTOCOL-17-UTILITIES.md) | Utility Systems | ~450 | FInt, FileHandler, JitterCompensator |
 | 18 | [PROTOCOL-18-SUPPLEMENTARY.md](PROTOCOL-18-SUPPLEMENTARY.md) | Supplementary Systems | ~950 | ServerAllocator, Lobby, Party, Friends, Camera, Audio |
+| 19 | [PROTOCOL-19-ORCHESTRATOR.md](PROTOCOL-19-ORCHESTRATOR.md) | Orchestrator (Avatar-First) | ~650 | Avatar-first allocation, collection phase, edge cases |
+| 20 | [PROTOCOL-20-TICK-SYNC.md](PROTOCOL-20-TICK-SYNC.md) | Tick Sync & Match Confirmation | ~900 | Dictionary-based verification, 60Hz sync, PvP confirmation flow |
 | — | PROTOCOL-INDEX.md | This Document | ~350 | Master index and quick reference |
 
 ---
@@ -42,6 +44,8 @@
 - **WebSocket Messages** → [PROTOCOL-2-WSS-PACKETS.md](PROTOCOL-2-WSS-PACKETS.md)
 - **UDP Game Packets** → [PROTOCOL-3-UDP-PACKETS.md](PROTOCOL-3-UDP-PACKETS.md)
 - **MatchKeeper Auth** → [PROTOCOL-4-MATCHKEEPER.md](PROTOCOL-4-MATCHKEEPER.md)
+- **Orchestrator (Avatar-First)** → [PROTOCOL-19-ORCHESTRATOR.md](PROTOCOL-19-ORCHESTRATOR.md)
+- **Tick Synchronization** → [PROTOCOL-20-TICK-SYNC.md](PROTOCOL-20-TICK-SYNC.md)
 - **Network Enums** → [PROTOCOL-10-ENUMS.md#5-network--packet-enums](PROTOCOL-10-ENUMS.md#5-network--packet-enums)
 
 #### Backend Services
@@ -103,8 +107,9 @@
 |-------|-----------|------|---------|
 | **WSS** | WebSocket | 443 | Lobby, matchmaking, chat |
 | **MK** | TCP | 6767 | Match authentication |
-| **UDP** | LiteNetLib | 6006 | In-game data @ 60Hz |
+| **UDP** | LiteNetLib | 6006/7850+ | In-game data @ 60Hz |
 | **HTTPS** | REST | 443 | PlayFab services |
+| **ORCH** | HTTP | 8080 | Orchestrator (avatar-first allocation) |
 
 ### Fighting Styles Summary
 
@@ -188,31 +193,34 @@ BlockAll: 2047
 ## Match Flow Reference
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         MATCH LIFECYCLE                              │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  1. NONE          → Waiting for connection                           │
-│       │                                                              │
-│       ▼                                                              │
-│  2. PREGAME       → 5 second countdown                              │
-│       │                                                              │
-│       ▼                                                              │
-│  3. TELEPORT      → Players spawn/teleport to positions             │
-│       │                                                              │
-│       ▼                                                              │
-│  4. MATCHRUNNING  → COMBAT ACTIVE (60Hz tick rate)                  │
-│       │                                                              │
-│       ▼                                                              │
-│  5. ENDMATCH      → Winner determined                               │
-│       │                                                              │
-│       ▼                                                              │
-│  6. POSTMATCH     → Results, rewards calculation                    │
-│       │                                                              │
-│       ▼                                                              │
-│  7. END           → Cleanup, disconnect                             │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                           MATCH LIFECYCLE                                │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  1. NONE                    → Waiting for connection                     │
+│       │                                                                  │
+│       ▼                                                                  │
+│  2. WAITINGFORCONFIRMATION  → PvP only: accept/decline popup (12s)      │
+│       │                       (Solo/bot: skipped)                        │
+│       ▼                                                                  │
+│  3. PREGAME                 → 5 second countdown                        │
+│       │                                                                  │
+│       ▼                                                                  │
+│  4. TELEPORT                → Players spawn/teleport to positions       │
+│       │                                                                  │
+│       ▼                                                                  │
+│  5. MATCHRUNNING            → COMBAT ACTIVE (60Hz tick rate)            │
+│       │                                                                  │
+│       ▼                                                                  │
+│  6. ENDMATCH                → Winner determined                         │
+│       │                                                                  │
+│       ▼                                                                  │
+│  7. POSTMATCH               → Results, rewards calculation              │
+│       │                                                                  │
+│       ▼                                                                  │
+│  8. END                     → Cleanup, disconnect                       │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Details:** [PROTOCOL-6-STATE-MACHINES.md#match-state-machine](PROTOCOL-6-STATE-MACHINES.md)
@@ -286,6 +294,8 @@ Assets/
 | 1.1 | Jan 21, 2026 | Added Bot AI, Entities, Maps documentation (13 total) |
 | 1.2 | Jan 21, 2026 | Added Server Systems, Diagnostics, Shields, Utilities (17 total) |
 | 1.3 | Jan 21, 2026 | Added Supplementary Systems - Social, Camera, Audio (18 total) |
+| 1.4 | Feb 7, 2026 | Added Orchestrator (Avatar-First Architecture) - fixes mobile attack bug (19 total) |
+| 1.5 | Feb 9, 2026 | Added Tick Sync & Match Confirmation - dictionary-based verification, PvP confirmation flow, MatchStateInfo flags field (20 total) |
 
 ---
 

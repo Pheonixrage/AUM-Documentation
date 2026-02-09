@@ -702,7 +702,7 @@ public struct MatchOver_Data
 
 ### 4.9 MatchStateInfo (MATCHSTATEINFO - 0x1408)
 
-**Purpose:** Match state transition
+**Purpose:** Match state transition + PvP match confirmation signaling
 
 ```csharp
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -716,12 +716,23 @@ public struct MatchStateInfo
 
     public byte matchState;      // Offset: 3, Size: 1 byte
                                  // MatchStates enum:
-                                 // 0=NONE, 1=PREMATCH, 2=TELEPORT
-                                 // 3=MATCH, 4=ENDMATCH, 5=POSTMATCH
-                                 // 6=END
+                                 // 0=NONE, 1=WAITINGFORCONFIRMATION,
+                                 // 2=PREMATCH, 3=TELEPORT,
+                                 // 4=MATCH, 5=ENDMATCH, 6=POSTMATCH,
+                                 // 7=END
+
+    public byte flags;           // Offset: 4, Size: 1 byte (added Feb 2026)
+                                 // Bit 0 (0x01): CONFIRM_REQUIRED — show accept/decline popup
+                                 // Bit 1 (0x02): ALL_ACCEPTED — all players accepted, load map
+                                 // Bit 2 (0x04): MATCH_CANCELLED — someone declined/timed out
+                                 // Default: 0x00 (no flags — backward compatible)
 }
-// Total Size: 4 bytes
+// Total Size: 5 bytes (was 4 bytes before flags field)
 ```
+
+**Flag Usage:**
+- Solo/bot matches: `flags` stays `0x00` — existing flow unchanged
+- PvP matches: server sends `flags=0x01` when all humans connect, waits for PLAYER_READY(0) from each, then sends `flags=0x02` to trigger map load, or `flags=0x04` if any decline/timeout
 
 ### 4.10 ForfeitMatch (FORFEITMATCH - 0x140A)
 
@@ -1040,7 +1051,7 @@ Client Frame N+RTT/2:
 | StateMismatchLog | 0x1406 | 9 | C→S |
 | StateChangeLog | 0x1406 | 9 | C→S |
 | MatchOver_Data | 0x1407 | 64-70 | S→C |
-| MatchStateInfo | 0x1408 | 4 | S→C |
+| MatchStateInfo | 0x1408 | 5 | S→C |
 | PlayerKarma | 0x1409 | 11 | Both |
 | ForfeitMatch | 0x140A | 3 | S→C |
 | Tutorial_Progress | 0x140B | 10 | Both |
