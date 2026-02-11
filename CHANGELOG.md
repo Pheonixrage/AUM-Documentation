@@ -4,7 +4,62 @@ All notable changes across both AUM-The-Epic (Client) and AUM-Headless (Server).
 
 ---
 
+## [2026-02-11] PlayFab Social Services & Lobby System
+
+### AUM-The-Epic (Client)
+- **feat**: Wire friends, party, lobby systems to PlayFab REST APIs
+- **feat**: PlayFabLobbyService - create, join, leave, browse, invite via PlayFab Multiplayer API
+- **feat**: PlayFabFriendsService - friend code generation, search, friend requests via CloudScript
+- **feat**: PlayFabPartyService - party management skeleton
+- **feat**: Discord SDK scaffold (DiscordManager, DiscordRichPresence, DiscordChatService)
+- **feat**: Training mode local match bypass (no server needed)
+- **feat**: MCP autonomous dev tools (execute_code, screenshot, simulate_input, get_ui_state)
+- **fix**: Lobby creation UI transition (forceNextPoll flag, immediate GetLobbyState)
+- **fix**: Lobby polling backoff (5s base, +5s/error, 30s max, auto-stop after 10)
+- **fix**: Stale lobby auto-cleanup on browse and app quit
+- **fix**: LobbyData constructor skipping players with empty friendID
+- **fix**: OnLobbyLeft not stopping polling (caused rate-limit spam)
+- **fix**: Double lobby creation guard (isCreatingLobby flag)
+- **fix**: Profile screen blank friend ID (handle missing SocialInfo for new players)
+- **fix**: Lobby toggle hidden on Karma Marga (removed wins>0 gate)
+- **fix**: 10 compilation errors in PlayFab social services
+
+### PlayFab CloudScript
+- **feat**: Deployed 7 new social handlers (Revision 51, 24 total)
+- GenerateFriendCode, SearchByFriendCode, SendFriendRequest, ClearFriendRequest
+- GetFriendsEnrichmentData, SendInvite, ClearProcessedInvites
+
+---
+
+## [2026-02-11] Autonomous Development Pipeline
+
+### Infrastructure
+- **feat**: Expanded MCP server suite from 4 to 12 servers (all connected)
+- **feat**: Added Context7 (live SDK docs), Docker, Playwright, GitHub, Hetzner Cloud, SSH, Sentry, Firebase MCP servers
+- **feat**: Built 5 custom MCP tools: execute_code, screenshot, set_property, simulate_input, get_ui_state
+- **feat**: Unity Headless MCP bridge connected (port 6401)
+- **feat**: Docker v29.2.0 installed and MCP connected
+
+### Autodev Skill (`/autodev`)
+- **feat**: Created 10-phase autonomous development pipeline skill
+- **feat**: Full deployment pipeline: local verify → staging → user gate → production
+
+### Configuration
+- **chore**: All credentials discovered autonomously from codebase/system
+- **chore**: MCP servers split: 4 project-level (.mcp.json) + 8 user-level (~/.claude.json)
+
+---
+
 ## [2026-02-07] - LEGENDARY FIXES
+
+### AUM-The-Epic (Client)
+- **fix**: Focus system - ServerAuthority.ConsumeFocus sync-back via SetFocusRaw()
+- **fix**: AUMLogger level fix for proper debug output
+- **fix**: Earth stun always applies regardless of elemental cycle
+
+---
+
+## [2026-01-30] LEGENDARY FIX
 
 ### AUM-The-Epic (Client)
 - **[LEGENDARY] fix**: Elemental/SpecialAbility controls fully working
