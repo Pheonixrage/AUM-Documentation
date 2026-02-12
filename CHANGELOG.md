@@ -4,6 +4,34 @@ All notable changes across both AUM-The-Epic (Client) and AUM-Headless (Server).
 
 ---
 
+## [2026-02-12] Grand Merge Verification & Branch Structure
+
+### AUM-The-Epic (Client) — `AUM_BODY`
+- **fix**: IsBotMatch bug in PlayFabMatchmaker.cs (line 799: false -> true)
+- **feat**: ApplyBuildModeSync() in ServerAllocator for auto ConnectionMode sync
+- **fix**: AUMAuthConfig moved to Resources/ for Resources.Load compatibility
+- **chore**: PreConnectManager.cs.meta added
+- **verified**: MatchFoundPopup Cancel/Accept flow (programmatic + UI)
+- **verified**: Full post-match flow on loss (Panel_2 -> Panel_3 -> MainMenu)
+- **verified**: Zero client errors across full match lifecycle
+
+### AUM-Headless (Server) — `AUM_MIND`
+- **chore**: ProjectSettings updated for Unity version compatibility
+- **known**: PreConnect avatar sync timeout on Singapore (auth succeeds, AvatarSync=False)
+
+### AUM-Documentation — `AUM_SPIRIT`
+- **docs**: Grand Merge verification session log
+- **docs**: MCP playtest pipeline documentation
+
+### Branch Structure Established
+| Branch | Project | Purpose |
+|--------|---------|---------|
+| `AUM_BODY` | AUM-The-Epic | Client (UI, input, rendering) |
+| `AUM_MIND` | AUM-Headless | Server (authority, validation) |
+| `AUM_SPIRIT` | AUM-Documentation | Context, logs, architecture |
+
+---
+
 ## [2026-02-11] PlayFab Social Services & Lobby System
 
 ### AUM-The-Epic (Client)
