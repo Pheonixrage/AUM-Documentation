@@ -4,6 +4,25 @@ All notable changes across both AUM-The-Epic (Client) and AUM-Headless (Server).
 
 ---
 
+## [2026-02-13] Store Purchase Bugs — Currency, Inventory, WearItems
+
+### AUM-The-Epic (Client)
+- **fix**: Currency reconciliation uses `Math.Max(VC, AvatarData)` for BZ/SV/GD — prevents stale avatar data from zeroing out Virtual Currencies on login
+- **fix**: Inventory sync preloads PlayFab catalog before processing items — old purchases without itemCode CustomData now resolve via catalog lookup
+- **fix**: Set purchase popup shows individual piece icons via async Addressable loading (was showing set icon 5x)
+- **fix**: CustomizationScreen saves wearItems to PlayFab on confirm — replaces stubbed `SendCustomizationItemUUIDs` left from WebSocket removal
+- **fix**: Client passes itemCode in `PurchaseItem()` calls for server-side CustomData tagging
+- **fix**: "No avatar loaded" error guard with `EnsureAvatarId` helper in PlayFabAvatarCurrencyService
+- **fix**: Transparent overlay stuck on purchase error — `buyItemPanel.Close()` in error handler
+- **feat**: Currency conversion UI improvements and null guards
+- **feat**: CloudScript backfill call (fire-and-forget) tags old inventory items with itemCode after sync
+
+### PlayFab CloudScript (Dev — Revision 60)
+- **feat**: `purchaseWithAvatarCurrency` stores itemCode in granted item's CustomData
+- **feat**: `backfillInventoryItemCodes` handler — iterates inventory, resolves itemCode from catalog, tags items missing CustomData
+
+---
+
 ## [2026-02-11] PlayFab Social Services & Lobby System
 
 ### AUM-The-Epic (Client)
