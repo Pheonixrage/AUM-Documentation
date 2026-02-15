@@ -85,10 +85,21 @@ Common phrases and what they mean:
 | `TrainingMapConfig.cs` | Tutorial state communication |
 | `Tutorial*.cs` | Individual tutorial quests |
 
+### Store & Economy
+| File | Purpose |
+|------|---------|
+| `AssetManager.cs` | Addressable loading, GetKeysFromUniqueID, avatar mesh combining |
+| `StoreManager.cs` | Store UI, synthetic Set generation, featured filter, icon loading |
+| `FighterManager.cs` | Avatar creation, global name validation via CloudScript |
+| `PlayFabDataBridge.cs` | Avatar data ↔ PlayFab sync, wearItems conversion/filtering |
+| `PlayFanInventoryService.cs` | Inventory sync, default wearItems generation |
+| `MeshCombiner.cs` | Mesh combining, blend shape handling with dedup |
+| `PlayFabMatchmaker.cs` | PlayFab matchmaking + bot fallback + cancel logic |
+| `MatchEndManager.cs` | Post-match rewards, karma effects, currency refresh |
+
 ### Network
 | File | Purpose |
 |------|---------|
-| `WebSocketConnector.cs` | Main menu WebSocket connection |
 | `Packet.cs` | Packet type enums and structs |
 | `InGamePacketManager.cs` | In-game packet handling |
 
@@ -139,11 +150,42 @@ git push origin legacy-working-oct29
 | Feature | Status |
 |---------|--------|
 | Authentication | ✅ Working |
-| Data Sync | ✅ Working |
-| Matchmaking | ✅ Working |
+| Data Sync | ✅ Working (3-layer persistence) |
+| Matchmaking | ✅ Working (7 queues, MinTeamSize=0) |
+| Store | ✅ Working (purchase, Set bundles, featured) |
+| Inventory | ✅ Working (catalog preload, itemCode tagging) |
+| Avatar Names | ✅ Working (global uniqueness via CloudScript) |
+| CloudScript | ✅ Dev rev 69, Prod rev 25 |
+| All game modes | ✅ Working (Solo, Duo, Trio, FFA, Tutorial) |
 | Tutorial (client-only) | 🟡 90% - needs player→bot damage |
-| Training Mode | ⏳ Needs testing |
-| 1v1/2v2 | ⏳ Needs testing |
+
+---
+
+## Critical Pitfalls (DO NOT REPEAT)
+
+### 1. ItemType Enum Count Trap
+**Problem:** `Enum.GetValues(typeof(ItemType)).Length` returns 8 (includes Treasure=6, Sets=7). Using this for wearItems array size creates bogus items.
+**Rule:** ALWAYS use explicit physical types: `{Head, Torso, Hands, Pants, Legs, Weapons}` — exactly 6.
+
+### 2. AssetManager.GetKeysFromUniqueID Blocks Sets
+**Problem:** Method returned null for ALL Set items. But Set ICONS exist (120 addressable assets). Only Set 3D meshes don't exist.
+**Rule:** Block Sets for `Item`/`Body` objectType, but ALLOW for `Icon` objectType.
+
+### 3. Featured Status Lost During Catalog Processing
+**Problem:** PlayFab catalog Set items tagged "featured" are skipped at line 405 (along with Treasure). Synthetic sets generated later don't inherit featured status.
+**Rule:** Capture featured Set identifiers BEFORE the skip, pass to GenerateSetItemsFromIndividuals().
+
+### 4. Blend Shape Frame Weight Crash
+**Problem:** Two items of same type (e.g. Head 1 default + Head 2 reward) both have blend shape "Blink". Even with name dedup, frame weight conflicts can crash AddBlendShapeFrame.
+**Rule:** Always try-catch AddBlendShapeFrame + bounds check delta arrays.
+
+### 5. Avatar Name Collisions
+**Problem:** Local-only name check misses names from other players. PlayFab avatar data is GUID-based so no data corruption, but confusing UX.
+**Rule:** Use CloudScript `checkAndRegisterAvatarName` for global atomic check. Registry in Title Internal Data.
+
+### 6. CancelMatch Race Condition
+**Problem:** Async PlayFab CancelMatchmakingTicket takes time. Bot fallback timer can fire during async cancel, starting a bot match the user didn't want.
+**Rule:** Set flags (IsSearching=false, botMatchRequested=true) + stop coroutines BEFORE calling async cancel.
 
 ---
 
@@ -151,10 +193,8 @@ git push origin legacy-working-oct29
 
 1. **Player → Bot damage in tutorial** - Not implemented yet
    - Need to add damage detection in LocalTutorialManager.Update()
-   - Check player attack state + distance to bot
 
-2. **WebSocket dependency** - Some managers still have WebSocket code
-   - Guards added but not fully tested
+2. **WebSocket fully removed** (Feb 10) - SocketPacket.cs kept for data structs only. Stubbed managers kept for signatures.
 
 ---
 

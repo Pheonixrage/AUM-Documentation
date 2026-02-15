@@ -4,6 +4,40 @@ All notable changes across both AUM-The-Epic (Client) and AUM-Headless (Server).
 
 ---
 
+## [2026-02-15] Store Icons, WearItems, Name Uniqueness, Cancel Race Condition, Karma
+
+### AUM-The-Epic (Client)
+- **fix**: Set bundle icons — AssetManager.GetKeysFromUniqueID now allows Sets for Icon objectType, loads proper 120 Set addressable icon assets instead of falling back to individual piece icons
+- **fix**: Store Featured tab — inherits PlayFab "featured" tags from catalog Set items before they're skipped; only Lohithavastra Gold featured
+- **fix**: Store Set labels — proper set name (Aranyavastra/Lohithavastra), tier (Bronze/Silver/Gold), "SET" slot label
+- **fix**: wearItems filter — ConvertToAvatarInfo filters out Treasure/Sets items from corrupted PlayFab data on load
+- **fix**: wearItems fallback — uses explicit 6 physical ItemTypes instead of `Enum.GetValues(typeof(ItemType)).Length` (was 8, creating bogus Treasure+Sets items)
+- **fix**: New avatar wearItems — GenerateDefaultWearItems() now called during AddDefaultItemsForAvatar() (was dead code)
+- **fix**: Blend shape crash — MeshCombiner CombineBlendShapes adds bounds check + try-catch for duplicate Head items from match rewards
+- **fix**: CancelMatch race condition — immediately sets IsSearching=false + botMatchRequested=true + stops coroutines BEFORE async PlayFab cancel
+- **fix**: Cross-player karma effects — delayed currency refresh for losers in MatchEndManager
+- **fix**: Post-match guna display fixes in GunaScreen
+- **feat**: Global avatar name uniqueness — FighterManager calls CloudScript checkAndRegisterAvatarName before creating avatar
+
+### PlayFab CloudScript (Dev rev 69, Prod rev 25)
+- **feat**: `checkAndRegisterAvatarName` — atomic check+register using Title Internal Data "AvatarNameRegistry"
+- **feat**: `unregisterAvatarName` — remove name from registry on avatar deletion
+
+### PlayFab Configuration
+- **fix**: All 7 matchmaking queues set to MinTeamSize=0, MinMatchSize=2 on both DEV and PROD titles
+
+### AUM-Headless (Server/Orchestrator)
+- **fix**: Orchestrator FFA bot team collision — reads occupied teams from players_data, assigns bots to free slots only
+- **fix**: Bot names unified — 100 Indian human-like names via BOT_NAMES constant
+
+### Key Learnings
+- **ItemType enum pitfall**: Head=0..Weapons=5 are physical (6 items). Treasure=6, Sets=7 are virtual. Never use Enum.GetValues length for wearItems count.
+- **Set icons exist**: 120 assets in `Assets/AUM_Addressables/Icons/` with `itemType: 7` (Sets). AssetManager was blocking ALL Sets in GetKeysFromUniqueID — must allow for Icon objectType.
+- **Featured inheritance**: PlayFab catalog Set items tagged "featured" were skipped at catalog processing line. Must capture featured status BEFORE the skip.
+- **Name registry**: Title Internal Data is atomic per-key, suitable for global name uniqueness. Key format: `{lowercaseName: "playFabId_avatarGuid"}`.
+
+---
+
 ## [2026-02-13] Store Purchase Bugs — Currency, Inventory, WearItems
 
 ### AUM-The-Epic (Client)
