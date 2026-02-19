@@ -4,6 +4,36 @@ All notable changes across both AUM-The-Epic (Client) and AUM-Headless (Server).
 
 ---
 
+## [2026-02-19] Nakama Migration Commit + MantraMuktha Aim Fix
+
+### AUM-The-Epic (Client) — `AUM_BODY`
+- **feat**: Full Nakama migration committed (154 files, +13,457 / -1,632 lines)
+- **feat**: 17 Nakama service classes (auth, data bridge, economy, matchmaking, social, chat, leaderboards, karma, IAP, remote config)
+- **feat**: 8 shared Data types extracted from PlayFab to `Assets/Scripts/Data/` (KarmaTypes, InventoryTypes, SocialTypes, AvatarCurrencyData, CatalogItemData, CatalogItemMapper, StoreTypes, LeaderboardTypes)
+- **feat**: Go server with 34+ RPCs in `nakama-server/` (match_end, currency, purchase, karma, inventory, etc.)
+- **feat**: Analytics scaffolding (AUMAnalyticsManager)
+- **fix**: StateManager BlockFlags — removed Block_Melee from WeaponStrike, Block_Dodge from EnterAiming_Weapon
+- **chore**: PlayFab imports removed from 61 non-PlayFab files
+- **chore**: PlayFabItemData/PlayFabItemMapper deleted (moved to CatalogItemData/CatalogItemMapper in Data/)
+
+### AUM-Headless (Server) — `AUM_MIND`
+- **fix**: State renames synced with client (Melee→WeaponStrike, Aiming→EnterAiming_Weapon, Third_Eye→ThirdEye, Teleport→MatchTeleport)
+- **fix**: MantraMuktha SetAnimStateLengthStartPoint restored in OnAttackEnter
+- **fix**: animStateLength uses clientTickRateMS (matches client timing)
+- **fix**: MantraMuktha teleport moved from dead OnSpecialAnticipateUpdate to OnSpecialAbilityEnter
+- **fix**: WeaponStrike/EnterAiming_Weapon BlockFlags aligned with client
+- **debug**: `[AIM-DBG]` logging added to MantraMuktha OnAimEnter/Update/Exit and PlayerManager PROGRESS/AIMING handlers
+- **chore**: Package manifests updated
+
+### AUM-Documentation — `AUM_SPIRIT`
+- **docs**: Session log for Nakama migration + MantraMuktha aim fix
+- **docs**: Changelog updated
+
+### Known Issue
+- MantraMuktha aim-to-attack partially fixed but not fully resolved — debug logging in place for next playtest
+
+---
+
 ## [2026-02-12] Grand Merge Verification & Branch Structure
 
 ### AUM-The-Epic (Client) — `AUM_BODY`
