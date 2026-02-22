@@ -929,5 +929,227 @@ All deploy as Docker containers alongside Nakama on Singapore server.
 
 ---
 
+## 20. AVATAR SYSTEM — Dynamic Customization & Weapon Mastery
+
+### Current State (What Exists)
+Fighting style = body mesh = abilities = cosmetics. Everything is coupled:
+- 5 styles × 2 genders = 10 unique skeletons with different bone structures
+- Each `*Player.cs` (Amuktha, MantraMuktha, etc.) hardcodes both visuals AND combat
+- Cosmetics are fighting-style-specific (can't share across styles)
+- `Match_Avatar` packet bakes `fightingStyle` as a single byte
+- Avatar identity = fighting style choice (permanent, never changes)
+
+### Target State (The Vision)
+Body and weapon are independent. One avatar, any weapon, universal cosmetics:
+
+```
+┌─────────────── AVATAR IDENTITY (Permanent) ────────────────┐
+│                                                             │
+│  permanentName: string     (unique, immutable, tied to auth)│
+│  uuid: string              (portable across games/worlds)   │
+│  authId: string            (Firebase/Nakama authentication) │
+│  gender: Male / Female                                      │
+│                                                             │
+│  bodyConfig:                                                │
+│  ├── skinColor             (material tint)                  │
+│  ├── skinTexture           (detail map)                     │
+│  ├── bodyBuild             (blendshape: lean↔muscular)      │
+│  ├── bodyHeight            (blendshape: short↔tall)         │
+│  ├── bodyWeight            (blendshape: light↔heavy)        │
+│  ├── hairStyle + hairColor                                  │
+│  └── tattoos[]             (decal projections)              │
+│                                                             │
+│  weaponStyle: current equipped weapon (0-4)                 │
+│  weaponMastery: { sword: 100, axe: 0, staff: 0, ... }      │
+│  wearItems: [universal cosmetic item UUIDs]                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Architecture: 5 Layers
+
+#### Layer 1: Unified Skeleton (Art Foundation)
+```
+BEFORE: 10 different skeletons (5 styles × 2 genders)
+AFTER:  2 base skeletons (Male + Female, standard Humanoid rig)
+
+Base_Male.fbx / Base_Female.fbx:
+├── Standard Unity Humanoid bone hierarchy
+├── BlendShapes for body variation:
+│   ├── build_muscular    [0.0 ─── 1.0]
+│   ├── build_lean        [0.0 ─── 1.0]
+│   ├── build_heavy       [0.0 ─── 1.0]
+│   ├── height_tall       [0.0 ─── 1.0]
+│   └── ... (10-20 shape keys)
+├── Swappable skin material (color + texture + tattoo overlay)
+└── Standard bone names → ALL animations work on ALL bodies
+                        → ALL cosmetics fit ALL bodies
+```
+
+Options for skeleton creation:
+- **Commission artist** for 2 production-quality base meshes with blendshapes
+- **UMA 2** (Unity Multipurpose Avatar, $50 Asset Store) — proven system with blendshapes, wardrobe, bone system
+- **Modify existing** meshes into unified base — depends on topology compatibility
+
+#### Layer 2: Weapon as Swappable Module
+```csharp
+// Weapons become loadable combat modules, separated from body
+public interface IWeaponBehavior
+{
+    WeaponType Type { get; }
+    float MeleeDamage { get; }
+    AbilityData[] Abilities { get; }
+    AnimatorOverrideController AnimOverride { get; }
+
+    void OnMeleeEnter(PlayerCombat controller);
+    void OnMeleeUpdate(PlayerCombat controller);
+    void OnSpecialEnter(PlayerCombat controller);
+    void OnSpecialUpdate(PlayerCombat controller);
+}
+
+// Implementations extracted from existing *Player.cs:
+// SwordBehavior    ← from AmukthaPlayer (dash, 100 dmg)
+// AxeBehavior      ← from MukthaMukthaPlayer (heavy hit, 125 dmg)
+// StaffBehavior    ← from MantraMukthaPlayer (teleport, 50 dmg)
+// BowBehavior      ← from YantramukhtaPlayer (ranged, 80 dmg)
+// ChakraBehavior   ← from PaniMukthaPlayer (maim, 65 dmg)
+
+// PlayerCombat.cs replaces ControllerBase weapon logic:
+public class PlayerCombat
+{
+    IWeaponBehavior currentWeapon;
+
+    void EquipWeapon(WeaponType type) {
+        currentWeapon = WeaponFactory.Create(type);
+        animator.runtimeAnimatorController = currentWeapon.AnimOverride;
+        characterData.abilityData = currentWeapon.Abilities;
+    }
+
+    void OnMeleeEnter() => currentWeapon.OnMeleeEnter(this);
+}
+```
+
+#### Layer 3: AvatarBuilder (Runtime Assembly)
+```csharp
+// Assembles a complete avatar from identity data at runtime
+public class AvatarBuilder
+{
+    public GameObject BuildAvatar(AvatarIdentity identity)
+    {
+        // Step 1: Load base body (Male or Female)
+        var body = LoadBaseBody(identity.gender);
+
+        // Step 2: Apply body shape via blendshapes
+        ApplyBodyConfig(body, identity.bodyConfig);
+
+        // Step 3: Apply skin color + texture + tattoo decals
+        ApplySkin(body, identity.bodyConfig);
+
+        // Step 4: Equip cosmetics (universal, fit any body)
+        foreach (var item in identity.wearItems)
+            MeshCombiner.Add(LoadCosmetic(item)); // existing system!
+        MeshCombiner.Combine();
+
+        // Step 5: Equip weapon (separate GameObject)
+        var weapon = WeaponFactory.Create(identity.weaponStyle);
+        weapon.AttachTo(body.weaponBone); // existing pattern!
+
+        // Step 6: Register with combat authority
+        authority.RegisterPlayer(BuildSnapshot(identity));
+
+        return body;
+    }
+}
+```
+
+#### Layer 4: Universal Cosmetics
+```
+BEFORE: Cosmetics per fighting style
+  Amuktha_Torso_Aranya_01    → only fits Amuktha skeleton
+  MantraMuktha_Torso_Aranya_01 → only fits MantraMuktha skeleton
+
+AFTER: Cosmetics fit ANY body (because one skeleton)
+  Torso_Aranya_01            → fits Male AND Female
+                             → auto-deforms with blendshapes
+                             → works with ANY equipped weapon
+
+CosmeticItem (Nakama catalog):
+├── itemId: UUID                              (blockchain-ready)
+├── slot: Head / Chest / Legs / Feet / Weapon
+├── meshRef: Addressable asset reference
+├── fits: [Male, Female, Both]
+├── autoFit: true  (adapts to body blendshapes)
+├── rarity: Common / Rare / Epic / Legendary
+└── source: Store / Chest / Event / Reward / Quest
+```
+
+#### Layer 5: Permanent Identity & Weapon Progression
+```
+Identity (set once, never changes):
+├── permanentName → globally unique, tied to auth UUID
+├── Created at first login, cannot be modified
+├── Displayed on player card, leaderboards, match UI
+
+Weapon Mastery (progression per weapon):
+├── Start with 1 weapon (player's choice)
+├── Unlock others via karma-based training (founder's design)
+├── Mastery level affects available abilities per weapon
+├── Data stored in Nakama: weaponMastery dictionary
+
+Network Packet Update:
+  Match_Avatar adds:
+  ├── bodyConfig (serialized body sliders)
+  ├── weaponStyle replaces fightingStyle semantically
+  └── Backward compatible: weaponStyle maps 1:1 to old fightingStyle
+```
+
+### What Stays The Same (Zero Changes)
+| System | Why It's Unaffected |
+|--------|-------------------|
+| ICombatAuthority | Already weapon-agnostic, works with any player |
+| StateManager (20+ states) | States are universal, not weapon-specific |
+| Elemental system (5 elements) | Elements are player-chosen, not body-tied |
+| God blessings (Trinity) | Applied as multipliers, independent of body/weapon |
+| Focus/Stamina/Willpower | Resource system is universal |
+| Networking (LiteNetLib) | Packets carry weapon type, body is visual-only |
+| Reconciliation system | State reconciliation doesn't care about visuals |
+| Bot AI pipeline | Bots generate KeyInput, weapon behavior handles the rest |
+
+### Implementation Sequence
+| Step | What | Breaks Game? | Weeks |
+|------|------|-------------|-------|
+| 1 | Data model expansion (add bodyConfig, weaponMastery, permanentName) | No | 0.5 |
+| 2 | Extract IWeaponBehavior from 5 *Player.cs files | No | 1.5 |
+| 3 | Unified skeleton (2 base meshes + blendshapes) — ART NEEDED | Yes (switchover) | 2.0 |
+| 4 | Universal cosmetics (remap to new skeleton) | No | 1.0 |
+| 5 | Permanent identity system | No | 0.5 |
+| 6 | Weapon progression (founder's design) | No | 1.0 |
+| 7 | Advanced customization (tattoos, detailed sliders, chests/events) | No | 1.0 |
+
+### File Impact
+**New files:**
+- `Assets/Scripts/Avatar/AvatarIdentity.cs` — Data model
+- `Assets/Scripts/Avatar/AvatarBuilder.cs` — Runtime assembly
+- `Assets/Scripts/Avatar/BodyConfig.cs` — Body customization data
+- `Assets/Scripts/Combat/IWeaponBehavior.cs` — Weapon interface
+- `Assets/Scripts/Combat/Weapons/SwordBehavior.cs` — Extracted from AmukthaPlayer
+- `Assets/Scripts/Combat/Weapons/AxeBehavior.cs` — Extracted from MukthaMukthaPlayer
+- `Assets/Scripts/Combat/Weapons/StaffBehavior.cs` — Extracted from MantraMukthaPlayer
+- `Assets/Scripts/Combat/Weapons/BowBehavior.cs` — Extracted from YantramukhtaPlayer
+- `Assets/Scripts/Combat/Weapons/ChakraBehavior.cs` — Extracted from PaniMukthaPlayer
+- `Assets/Scripts/Combat/WeaponFactory.cs` — Creates weapon behaviors
+- `Assets/Scripts/Combat/PlayerCombat.cs` — Unified combat controller
+
+**Modified files (~30):**
+- `ControllerBase.cs` — Delegate to IWeaponBehavior instead of virtual overrides
+- `CharacterData.cs` — Reference weapon behavior, not fighting style
+- `AssetManager.cs` — Load body + weapon separately
+- `PrefabManager.cs` — New prefab path structure
+- `Match_Avatar` struct — Add bodyConfig, rename semantics
+- `NakamaDataBridge.cs` — Store/load new avatar identity
+- All 5 `*Player.cs` files — Extract weapon logic, keep as legacy wrappers initially
+
+---
+
 *This blueprint is the single source of truth for AUM's June 2026 launch architecture.*
-*Updated: February 22, 2026 — Body/Mind/Spirit v3.1 (Modular Architecture)*
+*Updated: February 22, 2026 — Body/Mind/Spirit v3.2 (Avatar System)*

@@ -14,9 +14,9 @@ Feb 22 ─── Mar 8 ─── Mar 22 ─── Apr 5 ─── Apr 19 ──�
   │          │          │          │          │          │          │          │          │
   ▼          ▼          ▼          ▼          ▼          ▼          ▼          ▼          ▼
 Phase 1    Phase 2    Phase 3    Phase 4    Phase 5    Phase 6    Phase 7    Phase 8    LAUNCH
-Legacy     Bot AI     Social     Combat     Mobile     Mythology  Build      QA &       Go
-Sync &     World-     Systems    Polish &   UX &       Content    Pipeline   Scale      Live
-Foundation Class      Nakama     Netcode    Platform   & Balance  & CI/CD    Testing
+Legacy     Avatar     Bot AI +   Combat     Mobile     Mythology  Build      QA &       Go
+Sync &     System &   Social     Polish &   UX &       Content    Pipeline   Scale      Live
+Foundation Weapon Sep Systems    Netcode    Platform   & Balance  & CI/CD    Testing
 ```
 
 ---
@@ -71,11 +71,56 @@ Foundation Class      Nakama     Netcode    Platform   & Balance  & CI/CD    Tes
 
 ---
 
-## PHASE 2: BOT AI — WORLD-CLASS REBUILD (Mar 8 – Mar 22)
+## PHASE 2: AVATAR SYSTEM & WEAPON SEPARATION (Mar 8 – Mar 22)
 **Duration:** 2 weeks
-**Goal:** Bots indistinguishable from human players at network level
+**Goal:** Decouple body from weapon, establish universal avatar + cosmetics foundation
 
-### 2A: Bot Intelligence Framework (Week 1)
+### 2A: Data Model & Weapon Extraction (Week 1)
+| Task | Description | Files |
+|------|-------------|-------|
+| AvatarIdentity data model | Add bodyConfig, weaponMastery, permanentName, UUID | `Avatar/AvatarIdentity.cs`, `Avatar/BodyConfig.cs` |
+| IWeaponBehavior interface | Weapon as swappable combat module | `Combat/IWeaponBehavior.cs` |
+| SwordBehavior | Extract from AmukthaPlayer.cs | `Combat/Weapons/SwordBehavior.cs` |
+| AxeBehavior | Extract from MukthaMukthaPlayer.cs | `Combat/Weapons/AxeBehavior.cs` |
+| StaffBehavior | Extract from MantraMukthaPlayer.cs | `Combat/Weapons/StaffBehavior.cs` |
+| BowBehavior | Extract from YantramukhtaPlayer.cs | `Combat/Weapons/BowBehavior.cs` |
+| ChakraBehavior | Extract from PaniMukthaPlayer.cs | `Combat/Weapons/ChakraBehavior.cs` |
+| WeaponFactory + PlayerCombat | Unified combat controller delegates to weapon | `Combat/WeaponFactory.cs`, `Combat/PlayerCombat.cs` |
+| Update Match_Avatar | Add bodyConfig field, weaponStyle semantics | `SocketPacket.cs` |
+| Nakama avatar schema | Store new identity fields | `NakamaDataBridge.cs`, Go RPCs |
+
+### 2B: Unified Skeleton & AvatarBuilder (Week 2)
+| Task | Description | Notes |
+|------|-------------|-------|
+| Base body meshes | 2 meshes (Male + Female) with blendshapes | **ART NEEDED** — commission or UMA 2 |
+| Animation retargeting | Retarget 5 weapon animation sets to new skeleton | All anims must work on both bodies |
+| AvatarBuilder.cs | Runtime assembly: body → shape → skin → cosmetics → weapon | New system |
+| PrefabManager update | Load body + weapon separately instead of style-specific prefab | Modify existing |
+| Body customization UI | Sliders for build, height, weight, skin color | New screen |
+| Permanent name system | One-time name creation, tied to auth UUID, globally unique | `rpc_register_permanent_name` |
+
+### 2C: Universal Cosmetics Foundation
+| Task | Description |
+|------|-------------|
+| Remove style prefix from cosmetics | `Amuktha_Torso_X` → `Torso_X` |
+| Cosmetic auto-fit | Cosmetic meshes deform with body blendshapes (same skeleton) |
+| Update Nakama catalog | Cosmetic items become body-agnostic with UUID IDs |
+| Weapon cosmetics | Per-weapon-type skins (already separate GameObjects) |
+
+### Deliverables
+- Body and weapon fully independent
+- Any body can equip any weapon
+- Universal cosmetics fit any body shape
+- Permanent identity system (name + UUID)
+- Game still plays identically (combat values unchanged)
+
+---
+
+## PHASE 3: BOT AI + SOCIAL SYSTEMS (Mar 22 – Apr 5)
+**Duration:** 2 weeks
+**Goal:** World-class bot AI + full social experience on Nakama
+
+### 3A: Bot Intelligence Framework (Week 1)
 | Module | Purpose | Files |
 |--------|---------|-------|
 | `BotBrain.cs` | Central decision engine | Enhance existing |
@@ -85,9 +130,8 @@ Foundation Class      Nakama     Netcode    Platform   & Balance  & CI/CD    Tes
 | `ElementalIntelligence.cs` | Spell selection + cycle awareness | Enhance existing |
 | `PositioningAI.cs` | **NEW** — Zone control, spacing, retreats | Create |
 | `ComboEngine.cs` | **NEW** — Multi-hit chain planning | Create |
-| `AdaptiveAI.cs` | **NEW** — Learn opponent patterns mid-match | Create |
 
-### 2B: Bot Behavior Implementation (Week 2)
+### 3B: Bot Behavior (4 Difficulties × 4 Personalities)
 | Behavior | Easy | Medium | Hard | Extreme |
 |----------|------|--------|------|---------|
 | Melee combos | 1-2 hits | 3-hit chains | Full combos + mix-ups | Frame-perfect |
@@ -96,80 +140,30 @@ Foundation Class      Nakama     Netcode    Platform   & Balance  & CI/CD    Tes
 | Shield | Never | Low HP only | Read enemy cast | Perfect timing |
 | Focus use | Spam at 1 bar | Save for 2 bars | Strategic 3-bar | Optimal |
 | Positioning | Stationary | Range maintain | Zone control | Perfect spacing |
-| Third Eye | Never | Random | On burst incoming | Frame-perfect dodge |
-| Astra | At 4 bars always | When enemy low | Combo finisher | Max damage setup |
 
-### 2C: Personality System
-```
-PersonalityConfig:
-  - Aggressive: Rush-down, constant pressure, risk-taker
-  - Defensive: Counter-attacker, patience, punish mistakes
-  - Balanced: Adaptive, reads opponent, switches styles
-  - Chaotic: Unpredictable, random style switches, confusing
-```
+Note: Bots now use IWeaponBehavior — same weapon system as players.
 
-### 2D: Bot Testing & Tuning
-- [ ] Bot vs Bot matches (all difficulty combinations)
-- [ ] Bot vs Human (feel test — does it feel like fighting a person?)
-- [ ] Network validation — bot inputs through same authority pipeline
-- [ ] Performance test — 50 bot matches on single server
-
-### Deliverables
-- 4 difficulty levels with distinct feel
-- 4 personality types
-- Bots use same network pipeline as players
-- All 5 fighting styles + 3 god selections covered
-
----
-
-## PHASE 3: SOCIAL SYSTEMS ON NAKAMA (Mar 22 – Apr 5)
-**Duration:** 2 weeks
-**Goal:** Full social experience — party, friends, chat, presence
-
-### 3A: Party System (Nakama Groups) (Week 1)
+### 3C: Social Systems on Nakama (Week 1-2, parallel with Bot AI)
 | Feature | Implementation | RPC/API |
 |---------|---------------|---------|
-| Create Party | `NakamaPartyService.CreateParty()` | Nakama Groups API |
-| Invite Friend | `NakamaPartyService.InviteToParty()` | Nakama Notifications |
-| Join/Leave | `NakamaPartyService.JoinParty()` | Nakama Groups API |
-| Party Chat | `NakamaChatManager.JoinPartyChannel()` | Nakama Chat API |
-| Ready State | Custom group metadata | Nakama Group Metadata |
-| Party Matchmaking | `NakamaMatchmaker.FindMatch(partyProps)` | Matchmaker Properties |
-| Elemental Sync | Party members see each other's loadout | WebSocket presence data |
-| Host Controls | Leader can kick, set preferences | Group admin API |
+| Party System | `NakamaPartyService` (create, invite, join, ready) | Nakama Groups API |
+| Friends System | `NakamaFriendsService` (request, accept, code search) | Nakama Friends API |
+| Chat | `NakamaChatManager` (party channel, DMs) | Nakama Chat API |
+| Presence | `NakamaSocialManager` (online, in-match, idle) | Nakama Presence |
+| Profile | Public player card with avatar preview + career stats | `rpc_profile_public` |
 
-### 3B: Friends System (Week 1-2)
-| Feature | Implementation | RPC/API |
-|---------|---------------|---------|
-| Send Request | `NakamaFriendsService.SendRequest()` | Nakama Friends API |
-| Accept/Decline | `NakamaFriendsService.AcceptRequest()` | Nakama Friends API |
-| Friend Code | `NakamaFriendsService.SearchByCode()` | `rpc_search_friend_code` |
-| Friend List | `NakamaFriendsService.GetFriends()` | Nakama Friends API |
-| Online Status | `NakamaSocialManager.TrackPresence()` | Nakama Presence |
-| Friend Stats | `NakamaFriendsService.GetFriendStats()` | `rpc_friend_enrichment` |
-| Direct Message | `NakamaChatManager.OpenDM()` | Nakama Chat API |
-| Block Player | `NakamaFriendsService.BlockPlayer()` | Nakama Friends API |
-
-### 3C: Profile System (Week 2)
-| Feature | Implementation |
-|---------|---------------|
-| Public Profile Card | Avatar preview, stats, rank, god preference |
-| Name System | Unique names via `rpc_name_registry` |
-| Avatar Showcase | Selected avatar with equipped cosmetics |
-| Career Stats | Win rate, total matches, favorite style |
-| Match History | Last 20 matches with results |
-
-### 3D: Social UI Verification
-- [ ] All friend screens (Add, List, Stats, Request)
-- [ ] Party screens (Create, Invite, Ready, Leave)
-- [ ] Chat UI (Party channel, DM)
-- [ ] Profile screen (View own, view friend's)
+### 3D: Verification
+- [ ] Bot vs Bot matches (all weapon × difficulty combinations)
+- [ ] Bot vs Human (feel test)
+- [ ] Full party flow: create → invite → ready → match
+- [ ] Full friend flow: request → accept → chat → view profile
+- [ ] Profile displays new avatar system (body + weapon)
 
 ### Deliverables
-- Full party flow: create → invite → ready → match
-- Full friend flow: request → accept → chat → view profile
-- Real-time presence (online, in-match, idle)
-- All social UI screens functional
+- 4 difficulty levels, 4 personality types for bots
+- Bots use IWeaponBehavior (same pipeline as players)
+- Full party + friends + chat + presence
+- Profile system with avatar showcase
 
 ---
 
@@ -448,12 +442,12 @@ New Nakama RPC: `rpc_analytics_event` — Records match events for Metabase quer
 
 | Date | Milestone | Success Criteria |
 |------|-----------|-----------------|
-| **Mar 8** | Foundation Complete | All legacy features ported, Nakama clean |
-| **Mar 22** | Bot AI Complete | 4 difficulties, indistinguishable from human |
-| **Apr 5** | Social Complete | Party + Friends + Chat + Profile working |
+| **Mar 8** | Foundation Complete | All legacy features ported, Nakama clean, ASMDEF structure |
+| **Mar 22** | Avatar System Complete | Body/weapon decoupled, universal cosmetics, permanent identity |
+| **Apr 5** | Bot AI + Social Complete | 4 bot difficulties, party + friends + chat working |
 | **Apr 19** | Combat Polished | Frame-perfect feel, balanced matchups |
 | **May 3** | Mobile Ready | 60 FPS on target devices, touch controls polished |
-| **May 17** | Content Complete | Ranked system, maps, all modes verified |
+| **May 17** | Content Complete | Ranked system, maps, weapon progression, all modes verified |
 | **Jun 7** | Pipeline Ready | CI/CD, multi-region, data migration done |
 | **Jun 21** | LAUNCH | All stores approved, 5K CCU tested, go live |
 
@@ -477,8 +471,8 @@ New Nakama RPC: `rpc_analytics_event` — Records match events for Metabase quer
 ### Development Focus per Phase
 ```
 Phase 1 ████████ Foundation     (BODY 60%, MIND 20%, SPIRIT 10%, NAKAMA 10%)
-Phase 2 ████████ Bot AI         (MIND 70%, BODY 10%, SPIRIT 10%, NAKAMA 10%)
-Phase 3 ████████ Social         (BODY 40%, NAKAMA 40%, SPIRIT 10%, MIND 10%)
+Phase 2 ████████ Avatar System  (BODY 50%, ART 20%, NAKAMA 20%, SPIRIT 10%)
+Phase 3 ████████ Bot+Social     (MIND 40%, BODY 30%, NAKAMA 20%, SPIRIT 10%)
 Phase 4 ████████ Combat Polish  (BODY 50%, MIND 30%, SPIRIT 10%, NAKAMA 10%)
 Phase 5 ████████ Mobile UX      (BODY 70%, MIND 10%, SPIRIT 10%, NAKAMA 10%)
 Phase 6 ████████ Mythology      (BODY 30%, MIND 20%, NAKAMA 30%, SPIRIT 20%)
