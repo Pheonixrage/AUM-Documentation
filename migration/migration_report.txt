@@ -1,0 +1,101 @@
+============================================================
+AUM LEGACY -> PLAYFAB MIGRATION REPORT
+Generated: 2026-03-03T08:11:35.905355+00:00
+============================================================
+
+--- Summary ---
+Total OAuth emails:            712
+Players with valid avatars:     139
+Players without avatars:        573
+  Avatars from OAuth AccountID: 121
+  Avatars from Users AccountID: 6
+  Avatars from BOTH:            12
+Total avatars to migrate:       288
+Skipped (incomplete):           0
+Skipped (disabled):             226
+Total inventory items:          1728
+
+--- Avatar Count Distribution ---
+  1 avatar(s): 90 players
+  2 avatar(s): 24 players
+  3 avatar(s): 7 players
+  4 avatar(s): 3 players
+  5 avatar(s): 7 players
+  6 avatar(s): 2 players
+  7 avatar(s): 2 players
+  8 avatar(s): 1 players
+  9 avatar(s): 1 players
+  10 avatar(s): 1 players
+  29 avatar(s): 1 players
+
+--- Fighting Style Distribution ---
+  Amuktha: 52
+  MukthaMuktha: 59
+  MantraMuktha: 60
+  PaniMuktha: 50
+  Yantramuktha: 67
+
+--- God Selection Distribution ---
+  Brahma: 72
+  Vishnu: 77
+  Shiva: 139
+
+--- Currency Outliers (Bronze > 50,000) ---
+  pa1.unique333@gmail.com (q112): 102,246 Bronze
+  pa1.unique333@gmail.com (killerone): 194,926 Bronze
+  sowmitrireddy@gmail.com (bhun007): 348,750 Bronze
+  sowmitrireddy@gmail.com (Mani): 109,099 Bronze
+  sowmitrireddy@gmail.com (suui): 851,555 Bronze
+  dk5607045@gmail.com (Jatin): 173,303 Bronze
+  raghuvardhannimma@gmail.com (raaaggg): 470,280 Bronze
+  studiosbrahman@gmail.com (mukthaa): 414,034 Bronze
+  studiosbrahman@gmail.com (degaa): 86,571 Bronze
+  studiosbrahman@gmail.com (Indra): 215,201 Bronze
+  studiosbrahman@gmail.com (Kattepulla): 59,589 Bronze
+  studiosbrahman@gmail.com (elansh): 178,035 Bronze
+  studiosbrahman@gmail.com (win): 3,327,187 Bronze
+  studiosbrahman@gmail.com (yanthu): 99,527 Bronze
+  bharathricky36.br@gmail.com (MeJA): 158,711 Bronze
+  ramyaranjanbehera4@gmail.com (khfh): 57,781 Bronze
+  cvr.dheeraj@gmail.com (Banal): 689,819 Bronze
+  cvr.dheeraj@gmail.com (Mantri): 632,739 Bronze
+  cvr.dheeraj@gmail.com (Jafiliya): 1,405,846 Bronze
+  cvr.dheeraj@gmail.com (Rabinhud): 421,363 Bronze
+  cvr.dheeraj@gmail.com (Tank69): 507,736 Bronze
+  cvr.dheeraj@gmail.com (Arundathi): 81,826 Bronze
+  girijasankar2004@gmail.com (maxlord): 1,461,723 Bronze
+  manojreddysane57@gmail.com (yoodha): 377,595 Bronze
+  vedprakashmeena2191@gmail.com (Aurjana): 3,095,156 Bronze
+  vedprakashmeena2191@gmail.com (Nakul): 87,094 Bronze
+  vedprakashmeena2191@gmail.com (Yudhisthir): 475,973 Bronze
+
+--- PlayFab Chunk Estimates ---
+  Chunk 0: 14 players
+  Chunk 1: 13 players
+  Chunk 2: 20 players
+  Chunk 3: 15 players
+  Chunk 4: 13 players
+  Chunk 5: 8 players
+  Chunk 6: 13 players
+  Chunk 7: 16 players
+  Chunk 8: 12 players
+  Chunk 9: 15 players
+
+--- Data Size ---
+  Total JSON size: 492,076 bytes (480.5 KB)
+  Avg per player:  3,540 bytes
+  Est per chunk:   49,207 bytes
+
+--- Sample Players (first 10) ---
+  pheonixrage@gmail.com: 10 avatar(s) [Gdgdhhe, Hehehe, Ydvdgsh, Hfhfhru, Hehbus, pheonix, bandai, Maya, Rage, Achilles], 36,967 bronze, 2 AccountID(s)
+  csvs.harshu@gmail.com: 1 avatar(s) [Glaze], 0 bronze, 2 AccountID(s)
+  pa1.unique333@gmail.com: 5 avatar(s) [q112, vachesa, bladebaabji, killerone, mantra123], 377,931 bronze, 2 AccountID(s)
+  sourceagd@gmail.com: 5 avatar(s) [Rama, Xplode, Google, Shiva, Antidote], 0 bronze, 2 AccountID(s)
+  pnkjbnth@gmail.com: 1 avatar(s) [Rakshasha], 0 bronze, 2 AccountID(s)
+  cherian.tanuj97@gmail.com: 3 avatar(s) [frrt54, hulu89, drf4], 0 bronze, 1 AccountID(s)
+  rajat.musale@gmail.com: 1 avatar(s) [whatever], 0 bronze, 1 AccountID(s)
+  mritunjaybuddy99@gmail.com: 1 avatar(s) [mjay], 0 bronze, 1 AccountID(s)
+  sreekarsai193@gmail.com: 1 avatar(s) [order], 50 bronze, 1 AccountID(s)
+  easydryice@gmail.com: 1 avatar(s) [esyice], 0 bronze, 1 AccountID(s)
+
+============================================================
