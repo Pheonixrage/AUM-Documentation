@@ -23,7 +23,7 @@
 | Key | Value |
 |-----|-------|
 | Package Name | `com.BrahmanStudios.Aum` |
-| Current Version | `0.1.28` (Version Code `50`) |
+| Current Version | `0.1.34` (Version Code `56`) |
 | Min SDK | 23 (Android 6.0) |
 | Target SDK | 34 (Android 14) |
 | ABIs | ARM64 + ARMv7 |
@@ -89,11 +89,11 @@ The upload key fingerprint MUST match what's registered in Play Console under:
 | Company Name | Brahman Studios |
 | Product Name | Aum |
 | Package Name (Android) | `com.BrahmanStudios.Aum` |
-| Bundle Version | `0.1.28` |
-| Bundle Version Code | `50` |
+| Bundle Version | `0.1.34` |
+| Bundle Version Code | `56` |
 | Min API Level | 23 |
 | Target API Level | 34 |
-| Target Architectures | ARM64 + ARMv7 |
+| Target Architectures | ARM64 only |
 | Scripting Backend | IL2CPP |
 | Split Application Binary | **Enabled** |
 
@@ -141,7 +141,7 @@ The upload key fingerprint MUST match what's registered in Play Console under:
    - Edit > Project Settings > Player > Other Settings
    - Bump `Bundle Version` (e.g., `0.1.28` -> `0.1.29`)
    - Bump `Bundle Version Code` (must be HIGHER than any previously uploaded)
-   - Current highest: **50**
+   - Current highest: **56**
 
 4. **Build**
    - File > Build Settings > Build
@@ -186,6 +186,7 @@ https://play.google.com/console
 
 | Version Code | Bundle Version | Date | Notes |
 |-------------|---------------|------|-------|
+| 56 | 0.1.34 | Feb 28, 2026 | Daily rewards, 130+ cosmetics, victory anim, PvP dress fix, ARM64 only |
 | 50 | 0.1.28 | Feb 21, 2026 | Party fixes, MatchHistory, host ready state, correct keystore |
 | 43 | 0.1.26 | Previous | Previous open testing release |
 | 16 | 0.1.23 | Earlier | Earlier release |
@@ -208,7 +209,7 @@ Expected SHA1: `D5:7B:AD:56:79:BA:CB:E4:C7:0E:AC:DE:60:7B:D5:99:9E:81:41:A0`
 
 ### "Version code already used"
 **Cause:** Google Play rejects version codes that have been previously uploaded (even if that upload was deleted)
-**Fix:** Increment version code to a number higher than any ever uploaded. Current highest: **50**
+**Fix:** Increment version code to a number higher than any ever uploaded. Current highest: **56**
 
 ### "Base module too large (>200 MB)"
 **Cause:** Split Application Binary not enabled
