@@ -4,6 +4,25 @@ All notable changes across both AUM-The-Epic (Client) and AUM-Headless (Server).
 
 ---
 
+## [2026-03-17] EA5 In-Match Integration — Prematch Hide, Spell Type Icons, VFX Activation
+
+### AUM-Elemental-Progression (Client)
+- **fix**: EA5 hidden during PREGAME — EA5 is standalone (not child of spellGrid), so InGameScreenController's `disableObjects[]` PREGAME handler was making it visible while EA1-4 stayed hidden via inactive parent. Fix: `UpdateGameState()` PREGAME block explicitly hides EA5; `InitializeMatch()` activates it alongside spellGrid on match start
+- **fix**: EA5 VFX focus activation — `UIManager.SpellIcons` array was 10 elements but `AttackType.ELEMENTAL5 = 11`, causing `SetImageStatus()` to early-return on bounds check. Extended array to 12 elements, wired `SpellIcons[11]` to EA5's "Elemental Button" VFX child in scene
+- **fix**: EA5 added to `ButtonHolder.buttons[12]` (`ButtonType.Elemental5 = 12`) for proper disable/enable lifecycle during PREGAME→MATCHRUNNING transitions. Also added to `InGameButtons[9]` for tap animation
+- **fix**: `SetSpellValues()` EA5 guard — registers EA5 in `disableObjects[]` but does NOT call `SetActive(true)` (i==4 guard). Prevents prematch visibility while preserving TELEPORT/ENDMATCH/MATCHRUNNING lifecycle
+- **fix**: `SetSpellValues()` SpellIndice linking allows inactive EA5 — `i != 4` check bypasses `activeSelf` requirement so hidden EA5 still gets spell data linked
+- **feat**: Spell type icons on elemental buttons — new `elementSpellIcons[]` serialized field shows spell type icons (Instant/Channeling/Trap/Shield/Coating/Charged) matching Sadhana screen, with element icon fallback. `GetSpellTypeIcon()` helper method added to GameManager
+- **chore**: VFX material updates (54 .mat files) and spell prefab updates (9 prefabs) across Fire, Water, Air, Earth, Ether elementals
+
+### Key Learnings
+- **EA5 standalone hierarchy**: EA1-EA4 are children of `spellGrid` — when spellGrid is inactive, they're all hidden automatically. EA5 is a standalone sibling, so it needs explicit visibility management during each match state transition.
+- **AttackType enum gap**: `ELEMENTAL5 = 11` was appended at end to preserve serialization. Non-contiguous with ELEMENTAL1-4 (values 1-4). All arrays indexed by AttackType must account for this.
+- **ButtonType enum gap**: `Elemental5 = 12` appended at end. ButtonHolder `buttons[]` array must be 13 elements.
+- **disableObjects[] lifecycle**: PREGAME activates ALL entries (intended for dodge button etc.). EA5 registered there for TELEPORT/ENDMATCH hide, but PREGAME activation must be overridden by UpdateGameState.
+
+---
+
 ## [2026-02-15] Store Icons, WearItems, Name Uniqueness, Cancel Race Condition, Karma
 
 ### AUM-The-Epic (Client)
