@@ -59,7 +59,9 @@ archive/                   ← CLAUDE.md + MEMORY.md originals (Mar 7, 2026)
 - [P2 Dashboard](pipelines/P2-production/_index.md)
 - [P3 Dashboard](pipelines/P3-legacy/_index.md)
 - [Architecture Blueprint](ARCHITECTURE_BLUEPRINT.md)
-- [Launch Roadmap June 2026](LAUNCH_ROADMAP_JUNE2026.md)
+- [Unified Roadmap](ROADMAP.md)
+- [Tools Manifest](TOOLS_MANIFEST.md)
+- [Home Dashboard](HOME.md)
 - [Session Logs](sessions/)
 - [Archive](archive/)
 
@@ -79,4 +81,4 @@ tags: [elemental, VFX, spells]
 ---
 ```
 
-*Last updated: Mar 7, 2026*
+*Last updated: Mar 24, 2026*
