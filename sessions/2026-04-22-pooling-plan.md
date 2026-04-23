@@ -1,10 +1,11 @@
 ---
 date: 2026-04-22
-status: PLANNING — not yet implemented
+updated: 2026-04-23
+status: SHIPPED — Phase 1 + 1.1 + 1.2 + Voronoi-to-texture done, MukthaMuktha deal-breaker resolved
 pipeline: P3 — Legacy Live (AUM-Unity-Staging-Legacy + AUM-Unity-Server-Legacy)
 branch: legacy-working-oct29
 risk: MEDIUM (gameplay-adjacent, but client-only and gated by phases)
-related: [[bot-ai-legacy]]
+related: [[bot-ai-legacy]], [[2026-04-22-mukthamuktha-voronoi-bake-guide]]
 ---
 
 # Object Pooling Plan — Spell Effects + Impact VFX
@@ -309,4 +310,37 @@ These are in `DO NOT MODIFY` list per CLAUDE.md — pooling avoids them entirely
 ## Status Log
 
 - **2026-04-22:** Plan created. 4-agent investigation complete. Direct file verification done. Awaiting user go-ahead to start P1.
-- **(next entry):** _Will be filled when implementation begins or revert decision made._
+- **2026-04-22:** P1 shipped (`e1be0286e`) — pool melee + projectile impact VFX. User confirmed visuals intact, "tiny bit better" subjectively.
+- **2026-04-22:** P1.1 shipped (`e21abdce9`) — caught the missed melee-swing path in Amuktha + MukthaMuktha controllers (6 callsites). Same pool plumbing, dedup-ed god branches.
+- **2026-04-22:** Investigation pivot — user said FPS drops still visible during slash. Deep dive identified the **real** culprit: `PlayParticle.cs` instantiates persistent weapon trails that completely bypassed `VFXQueue`. The "mobile protection" documented in CLAUDE.md was protecting nothing. Also identified Axe_Slash shader (8 Voronoi + 7 Power + 2 GradientNoise per pixel) as the single biggest fragment shader cost.
+- **2026-04-22:** P1.2 shipped (`81cd607b2`) — refactored `VFXQueue.OptimizeExpensiveRenderers` to public + tier-aware, hooked PlayParticle into it, enabled GPU instancing on 4 Axe_Slash materials (caught a flag mismatch — renderer requested instancing, materials had it off → 30 draw calls per swing collapsed to 1).
+- **2026-04-22:** Editor-scaling fix shipped (`8f4a7984b`) — `#if UNITY_ANDROID` triggered in Editor when build target was Android, scaling slash visuals during iteration. Switched to runtime `Application.isEditor` + `Application.isMobilePlatform`.
+- **2026-04-22:** Two minor fixes attempted then reverted (`bebe0166b`, `bd833b170`, then reverts `f280774eb`, `e87006abd`) during back-and-forth on size-vs-perf tradeoff.
+- **2026-04-22:** Visual-size-preservation fix shipped (`10532ea1d`) — removed auto-applied `ScaleHalf` mode on mobile entirely. Slash renders at full size everywhere. Optimization infrastructure kept as opt-in only. Honest acknowledgement: ScaleHalf was contributing more to mobile FPS gain than instancing alone.
+- **2026-04-22:** **Voronoi → noise textures shipped for Axe_Slash** (`afddae17e`) — user replaced 8 Voronoi + 7 Power + 2 GradientNoise with two sampled noise textures (`noise.png`, `noise02.png`). Fragment shader cost dropped massively. Visual verified in-engine.
+- **2026-04-23:** **Voronoi → noise textures shipped for Axe_Slash360** (`0b6866c05`) — same treatment as Axe_Slash, completes the Voronoi removal across both slash variants. Reuses the same noise textures. User reports "much better than before" and confirms it works.
+- **2026-04-23:** All 11 commits pushed to `origin/legacy-working-oct29`. MukthaMuktha deal-breaker FPS issue resolved end-to-end.
+
+## Final commits shipped
+
+```
+0b6866c05  perf(shader): replace Voronoi nodes with noise textures in Axe_Slash360
+afddae17e  perf(shader): replace Voronoi nodes with noise textures in Axe_Slash
+10532ea1d  fix(vfx): preserve original slash visuals on mobile too — no scaling default
+8f4a7984b  fix(vfx): never strip Axe_Slash renderers in Editor
+81cd607b2  perf(vfx): P1.2 — MukthaMuktha slash optimization (VFXQueue + GPU instancing)
+e21abdce9  perf(vfx): P1.1 — pool melee swing impacts in Amuktha + MukthaMuktha controllers
+e1be0286e  perf(vfx): P1 — pool melee + projectile impact VFX (eliminate per-hit GC)
+```
+
+(Plus minor revert-and-redo cycle: bebe0166b/bd833b170/f280774eb/e87006abd — kept in history for traceability.)
+
+## What's left intentionally unfinished
+
+- **Phase 2** (status-effect indicator pooling — Mute/Fire/Slow/Stun) — low priority, deal-breaker resolved.
+- **Phase 3** (spell projectile pooling — `ProjectileScript`) — open. Would address spell FPS drops if they emerge as next bottleneck.
+- **Phase 4** (advanced `Projectile.cs` pooling — Yantramuktha arrows) — open.
+- **Astras** — intentionally excluded per user. Working fine.
+- **DiscusProjectile** — intentionally excluded. Too risky.
+
+If a future bottleneck surfaces, start at Phase 2/3 plan in this note.
